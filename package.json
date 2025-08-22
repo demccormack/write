@@ -1,0 +1,26 @@
+{
+  "name": "write",
+  "version": "0.0.1",
+  "description": "Toolkit for writers",
+  "main": "index.js",
+  "scripts": {
+    "write": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "write",
+    "writing",
+    "text",
+    "editor"
+  ],
+  "author": "Daniel Edward McCormack",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/demccormack/write.git"
+  },
+  "bugs": {
+    "url": "https://github.com/demccormack/write/issues"
+  },
+  "homepage": "https://github.com/demccormack/write#readme"
+}
