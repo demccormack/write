@@ -1,47 +1,100 @@
-# Write - Developer Documentation
+# write
 
-## Project Structure
+**The future of creative writing**
 
+A scaffolding tool that creates professional book projects with LaTeX typesetting, Git version control, and automated CI/CD publishing pipelines.
+
+## What This Tool Does
+
+`write` sets up the infrastructure for serious book writing by creating a complete project with:
+
+- 📁 **Project scaffolding** - Organized directory structure for LaTeX books
+- 🔄 **Git repository** - Initialized with proper `.gitignore` and structure
+- 🚀 **GitHub integration** - Repository creation and CI/CD setup
+- ⚡ **Automated builds** - GitHub Actions to compile PDFs on every commit
+- 📚 **LaTeX templates** - Professional book layouts ready to use
+
+## Quick Start
+
+### Installation
+
+```bash
+npm install -g write
 ```
-write/
-├── src/                    # Source code
-│   └── index.js           # Main application entry point
-├── test/                  # Test files
-│   └── index.test.js      # Main tests
-├── docs/                  # Documentation
-├── dist/                  # Compiled output (generated)
-├── .vscode/               # VS Code settings
-├── eslint.config.mts      # ESLint configuration
-├── tsconfig.json          # TypeScript configuration
-├── .prettierrc.json       # Prettier configuration
-├── .nvmrc                 # Node.js version lock
-└── package.json           # Project configuration
+
+### Create a New Book Project
+
+```bash
+# Create and scaffold a complete book project
+write new "My Amazing Book"
+
+# This creates a local directory and GitHub repo with:
+# ├── my-amazing-book/
+# │   ├── chapters/          # LaTeX chapter files
+# │   ├── assets/            # Images, figures, etc.
+# │   ├── templates/         # LaTeX document classes
+# │   ├── .github/workflows/ # CI/CD for PDF generation
+# │   ├── .gitignore         # LaTeX-specific ignores
+# │   ├── main.tex           # Main document file
+# │   └── book.toml          # Project configuration
 ```
 
-## Available Scripts
+### What You Do Next
 
-- `npm start` - Run the application
-- `npm run dev` - Run in development mode with file watching
-- `npm test` - Run tests
-- `npm run test:watch` - Run tests in watch mode
-- `npm run build` - Build TypeScript to JavaScript
-- `npm run typecheck` - Type check without building
-- `npm run lint` - Lint code
-- `npm run lint:fix` - Lint and auto-fix issues
-- `npm run format` - Format code with Prettier
+1. **Edit in your preferred LaTeX editor** (TeXStudio, VS Code, Overleaf, etc.)
+2. **Commit changes to Git** - every idea, immortalized in your git log
+3. **Collaborate via pull requests** - built-in review process
+4. **Download PDFs from GitHub Actions** - share early previews with interested parties
 
-## Development Setup
+## Roadmap Features
 
-1. Ensure you have Node.js v24.6.0 installed (use `nvm use` if you have nvm)
-2. Install dependencies: `npm install`
-3. Start development: `npm run dev`
-4. Run tests: `npm test`
+> ⚠️ **Note**: This tool is in early development. The following features are planned:
 
-## Code Quality
+- [x] Project scaffolding with conventional directory structure
+- [ ] GitHub repository creation and setup
+- [ ] LaTeX template library (academic, fiction, technical)
+- [ ] GitHub Actions CI/CD pipeline configuration
+- [ ] Automated PDF builds on commit/PR
+- [ ] Multiple output formats (PDF, EPUB, HTML)
+- [ ] Book configuration management (`book.toml`)
+- [ ] Chapter management commands
+- [ ] Asset organization helpers
 
-This project uses:
+## Philosophy
 
-- **ESLint** for code linting
-- **Prettier** for code formatting
-- **TypeScript** for type checking
-- **Node.js built-in test runner** for testing
+This tool **does not** provide a writing interface. Instead, it:
+
+- Creates the foundation for professional book publishing
+- Automates the boring infrastructure setup
+- Lets you focus on writing, not tooling
+- Uses industry-standard tools (Git, GitHub, LaTeX)
+- Makes backups an integral part of your writing process
+- Enables collaborative workflows via pull requests
+
+## Requirements
+
+- Node.js
+- Git (for version control)
+- GitHub account (for repository hosting and CI/CD)
+- LaTeX editor (TeXStudio, VS Code, Overleaf, or another editor of your choice)
+
+## Future Commands
+
+```bash
+# Repository and CI setup
+write new "Book Title" --template academic
+write publish                    # Create GitHub repo + CI
+
+# Project management
+write chapter "Chapter Name"     # Add new chapter file
+write build                      # Local PDF build (if LaTeX installed)
+write status                     # Git status + build info
+```
+
+## Contributing
+
+This is an open-source project in active development. Check out our [Contributing Guide](CONTRIBUTING.md) to help build the future of book publishing tooling.
+
+## License
+
+MIT © Daniel Edward McCormack
