@@ -12,7 +12,7 @@ console.log('This is a placeholder for the write application.');
 
 // Read package.json for version info
 const packageJson = JSON.parse(
-  readFileSync(join(__dirname, 'package.json'), 'utf-8'),
+  readFileSync(join(__dirname, '..', 'package.json'), 'utf-8'),
 );
 
 // Export something for programmatic use

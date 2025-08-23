@@ -7,7 +7,7 @@ import prettierConfig from 'eslint-config-prettier';
 export default [
   // Ignore patterns
   {
-    ignores: ['node_modules/**', 'dist/**', '.git/**'],
+    ignores: ['node_modules/**', 'dist/**', '.git/**', 'coverage/**'],
   },
 
   // Base configuration for all JS/TS files
@@ -29,6 +29,17 @@ export default [
     ...config,
     files: ['**/*.{ts,mts,cts}'],
   })),
+
+  // Test files configuration
+  {
+    files: ['test/**/*.{js,ts}'],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+        ...globals.es2022,
+      },
+    },
+  },
 
   // Prettier integration
   {

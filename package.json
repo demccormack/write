@@ -3,14 +3,22 @@
   "version": "0.0.1",
   "description": "Toolkit for writers",
   "type": "module",
-  "main": "index.js",
+  "main": "src/index.js",
+  "bin": {
+    "write": "src/index.js"
+  },
   "scripts": {
-    "write": "node index.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node src/index.js",
+    "write": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "build": "tsc",
+    "test": "node --test test/**/*.test.js",
+    "test:watch": "node --test --watch test/**/*.test.js",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+    "typecheck": "tsc --noEmit"
   },
   "keywords": [
     "write",
