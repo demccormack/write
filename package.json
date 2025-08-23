@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "write": "node index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "keywords": [
     "write",
@@ -22,5 +24,8 @@
   "bugs": {
     "url": "https://github.com/demccormack/write/issues"
   },
-  "homepage": "https://github.com/demccormack/write#readme"
+  "homepage": "https://github.com/demccormack/write#readme",
+  "devDependencies": {
+    "prettier": "^3.6.2"
+  }
 }
