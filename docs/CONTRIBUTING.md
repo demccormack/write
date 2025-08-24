@@ -58,6 +58,12 @@ This project uses:
 2. Clone your fork: `git clone https://github.com/yourusername/write.git`
 3. Follow the development setup above
 
+### Contributor License Agreement (CLA)
+
+Before we can accept your contribution, you must agree to a Contributor License Agreement (CLA). The CLA ensures that the project maintainer retains the right to use your contributions in commercial applications while maintaining the open-source nature of the project under AGPL.
+
+By submitting a pull request, you are agreeing that your contributions can be used by the project maintainer in both open-source and proprietary commercial applications.
+
 ### Making Changes
 
 1. Create a new branch: `git checkout -b feature/your-feature-name`
