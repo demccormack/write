@@ -97,4 +97,12 @@ This is an open-source project in active development. Check out our [Contributin
 
 ## License
 
-MIT © Daniel Edward McCormack
+This project is licensed under the **GNU Affero General Public License v3.0 (AGPL-3.0-or-later)**.
+
+The AGPL license requires anyone who modifies this software and provides it as a service (like a hosted SaaS application) to make their full source code available. This protects the project from being used in proprietary applications without contributing back to the open source community.
+
+As the original author and copyright holder, I retain the right to use this code in my own commercial applications.
+
+For more details and FAQ about licensing, see [Licensing Information](LICENSING.md).
+
+© Daniel Edward McCormack
