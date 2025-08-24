@@ -59,6 +59,10 @@ write new "My Amazing Book"
 - [ ] Book configuration management (`book.toml`)
 - [ ] Chapter management commands
 - [ ] Asset organization helpers
+- [ ] **Author monetization support**:
+  - [ ] Patreon integration for subscriber-only content
+  - [ ] Automated chapter releases for supporters
+  - [ ] Supporter acknowledgments in generated books
 
 ## Philosophy
 
@@ -94,6 +98,22 @@ write status                     # Git status + build info
 ## Contributing
 
 This is an open-source project in active development. Check out our [Contributing Guide](CONTRIBUTING.md) to help build the future of book publishing tooling.
+
+## Support Development
+
+If you find this tool useful, consider supporting its development:
+
+- ⭐ **Star this repository** to help others discover it
+- 🐛 **Report bugs** and suggest features via [GitHub Issues](https://github.com/demccormack/write/issues)
+- 💖 **Sponsor development** via [GitHub Sponsors](https://github.com/sponsors/demccormack)
+- ☕ **Support on [Patreon](https://www.patreon.com/demccormack_write)** for ongoing development updates and early access
+
+Your support helps:
+
+- Maintain and improve the tool
+- Add new features and templates
+- Provide community support
+- Keep the project free and open-source
 
 ## License
 
