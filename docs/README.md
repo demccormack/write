@@ -19,7 +19,7 @@ A scaffolding tool that creates professional book projects with LaTeX typesettin
 ### Installation
 
 ```bash
-npm install -g write
+npm install -g @demccormack/write
 ```
 
 ### Create a New Book Project

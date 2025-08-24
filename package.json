@@ -1,5 +1,5 @@
 {
-  "name": "write",
+  "name": "@demccormack/write",
   "version": "0.0.1",
   "description": "Toolkit for writers",
   "type": "module",
