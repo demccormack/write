@@ -50,7 +50,7 @@ write new "My Amazing Book"
 
 > ⚠️ **Note**: This tool is in early development. The following features are planned:
 
-- [x] Project scaffolding with conventional directory structure
+- [ ] Project scaffolding with conventional directory structure
 - [ ] GitHub repository creation and setup
 - [ ] LaTeX template library (academic, fiction, technical)
 - [ ] GitHub Actions CI/CD pipeline configuration
