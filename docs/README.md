@@ -1,6 +1,6 @@
 # write
 
-**The future of creative writing**
+**The future of book creation tooling**
 
 A scaffolding tool that creates professional book projects with LaTeX typesetting, Git version control, and automated CI/CD publishing pipelines.
 
