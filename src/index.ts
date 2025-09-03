@@ -11,7 +11,13 @@ console.log('Welcome to write!');
 console.log('This is a placeholder for the write application.');
 
 // Read package.json for version info
-const packageJson = JSON.parse(
+interface PackageJson {
+  version: string;
+  name: string;
+  [key: string]: unknown;
+}
+
+const packageJson: PackageJson = JSON.parse(
   readFileSync(join(__dirname, '..', 'package.json'), 'utf-8'),
 );
 
