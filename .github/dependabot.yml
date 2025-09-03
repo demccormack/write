@@ -1,0 +1,33 @@
+version: 2
+updates:
+  - package-ecosystem: 'npm'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+      day: 'friday'
+      time: '15:00'
+      timezone: 'Pacific/Auckland'
+    open-pull-requests-limit: 5
+    groups:
+      development-dependencies:
+        dependency-type: 'development'
+        patterns:
+          - '@types/*'
+          - 'eslint*'
+          - 'prettier*'
+          - 'typescript*'
+          - '@typescript-eslint/*'
+          - 'vitest*'
+          - 'jest*'
+          - '@vitest/*'
+      minor-and-patch:
+        update-types:
+          - 'minor'
+          - 'patch'
+    assignees:
+      - 'demccormack'
+    commit-message:
+      prefix: 'deps'
+      prefix-development: 'deps-dev'
+      include: 'scope'
+    rebase-strategy: 'auto'
