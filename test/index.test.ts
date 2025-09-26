@@ -1,6 +1,6 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert';
-import writeApp from '../src/index.js';
+import writeApp from '../src/index.ts';
 
 describe('Write App', () => {
   test('should export correct version and name', () => {
