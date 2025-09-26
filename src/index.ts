@@ -1,28 +1,11 @@
 #!/usr/bin/env node
+import { displayName, version } from './version.js';
 
-import { readFileSync } from 'fs';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const args = process.argv.slice(2);
+if (args.includes('-v') || args.includes('--version')) {
+  console.log(`${displayName} ${version}`);
+  process.exit(0);
+}
 
 console.log('Welcome to write!');
 console.log('This is a placeholder for the write application.');
-
-// Read package.json for version info
-interface PackageJson {
-  version: string;
-  name: string;
-  [key: string]: unknown;
-}
-
-const packageJson: PackageJson = JSON.parse(
-  readFileSync(join(__dirname, '..', 'package.json'), 'utf-8'),
-);
-
-// Export something for programmatic use
-export default {
-  version: packageJson.version,
-  name: 'write',
-};
