@@ -1,0 +1,22 @@
+[book]
+title = "{{BOOK_TITLE}}"
+author = "Your Name"
+language = "en"
+
+[latex]
+document_class = "book"
+font_size = "12pt"
+paper_size = "letterpaper"
+margin = "1in"
+
+[build]
+output_format = ["pdf"]
+chapters_dir = "chapters"
+assets_dir = "assets"
+templates_dir = "templates"
+
+[metadata]
+description = "A book created with the write tool"
+keywords = []
+subject = ""
+creator = "write v0.0.1"
