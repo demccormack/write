@@ -1,13 +1,63 @@
 import { test, describe, before, after } from 'node:test';
 import assert from 'node:assert';
 import { spawn } from 'node:child_process';
-import { mkdir, rm, readFile, stat } from 'fs/promises';
+import { mkdir, rm, readFile, stat, writeFile } from 'fs/promises';
 import { join, resolve } from 'path';
 
 const TMP_DIR = 'tmp';
 const TEST_SUBDIR = 'test-new-command';
 const TEST_PATH = join(TMP_DIR, TEST_SUBDIR);
 const CLI_PATH = resolve('dist/index.js');
+const README_FILE = 'docs/README.md';
+
+/**
+ * Update README with embedded directory structure
+ */
+async function updateReadmeWithStructure(
+  treeOutput: string,
+  projectTitle: string,
+): Promise<void> {
+  try {
+    const readmeContent = await readFile(README_FILE, 'utf8');
+
+    const startMarker = '<!-- BEGIN AUTO-GENERATED STRUCTURE -->';
+    const endMarker = '<!-- END AUTO-GENERATED STRUCTURE -->';
+
+    const startIndex = readmeContent.indexOf(startMarker);
+    const endIndex = readmeContent.indexOf(endMarker);
+
+    if (startIndex === -1 || endIndex === -1) {
+      console.warn('Auto-generation markers not found in README');
+      return;
+    }
+
+    const beforeMarker = readmeContent.substring(
+      0,
+      startIndex + startMarker.length,
+    );
+    const afterMarker = readmeContent.substring(endIndex);
+
+    const embeddedContent = `
+\`\`\`bash
+write new "${projectTitle}"
+\`\`\`
+
+This creates a local directory with the following structure:
+
+\`\`\`
+${treeOutput}
+\`\`\`
+
+`;
+
+    const updatedReadme = beforeMarker + embeddedContent + afterMarker;
+    await writeFile(README_FILE, updatedReadme);
+
+    console.log('✓ Updated README with current directory structure');
+  } catch (error) {
+    console.warn(`Could not update README: ${error}`);
+  }
+}
 
 /**
  * Helper function to run the write command and capture output
@@ -106,8 +156,8 @@ describe('write new command', () => {
   });
 
   test('should create project with correct structure (snapshot)', async (t) => {
-    const projectTitle = 'Snapshot Test Project';
-    const expectedProjectName = 'snapshot-test-project';
+    const projectTitle = 'My Amazing Book';
+    const expectedProjectName = 'my-amazing-book';
     const projectPath = join(TEST_PATH, expectedProjectName);
 
     const result = await runWriteCommand(['new', projectTitle], TEST_PATH);
@@ -128,9 +178,10 @@ describe('write new command', () => {
       'Main project directory should exist',
     );
 
-    // Get tree structure and snapshot it
+    // Get tree structure, snapshot it and update README
     const treeOutput = await runTreeCommand(projectPath);
     t.assert.snapshot(treeOutput);
+    await updateReadmeWithStructure(treeOutput, projectTitle);
   });
 
   test('should substitute title in main.tex', async () => {

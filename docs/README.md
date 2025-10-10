@@ -24,20 +24,32 @@ npm install -g @demccormack/write
 
 ### Create a New Book Project
 
+<!-- BEGIN AUTO-GENERATED STRUCTURE -->
 ```bash
-# Create and scaffold a complete book project
 write new "My Amazing Book"
-
-# This creates a local directory and GitHub repo with:
-# ├── my-amazing-book/
-# │   ├── chapters/          # LaTeX chapter files
-# │   ├── assets/            # Images, figures, etc.
-# │   ├── templates/         # LaTeX document classes
-# │   ├── .github/workflows/ # CI/CD for PDF generation
-# │   ├── .gitignore         # LaTeX-specific ignores
-# │   ├── main.tex           # Main document file
-# │   └── book.toml          # Project configuration
 ```
+
+This creates a local directory with the following structure:
+
+```
+my-amazing-book
+├── .github
+│   └── workflows
+│       └── build.yml
+├── .gitignore
+├── assets
+│   ├── figures
+│   └── images
+├── book.toml
+├── chapters
+│   └── chapter01.tex
+├── main.tex
+└── templates
+
+8 directories, 5 files
+```
+
+<!-- END AUTO-GENERATED STRUCTURE -->
 
 ### What You Do Next
 
