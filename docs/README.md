@@ -25,6 +25,7 @@ npm install -g @demccormack/write
 ### Create a New Book Project
 
 <!-- BEGIN AUTO-GENERATED STRUCTURE -->
+
 ```bash
 write new "My Amazing Book"
 ```

@@ -38,6 +38,7 @@ async function updateReadmeWithStructure(
     const afterMarker = readmeContent.substring(endIndex);
 
     const embeddedContent = `
+
 \`\`\`bash
 write new "${projectTitle}"
 \`\`\`
