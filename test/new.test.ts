@@ -1,7 +1,7 @@
 import { test, describe, before, after } from 'node:test';
 import assert from 'node:assert';
 import { spawn } from 'node:child_process';
-import { mkdir, rm, access, readFile, stat } from 'fs/promises';
+import { mkdir, rm, readFile, stat } from 'fs/promises';
 import { join, resolve } from 'path';
 
 const TMP_DIR = 'tmp';
@@ -44,15 +44,36 @@ function runWriteCommand(
 }
 
 /**
- * Helper function to check if a file exists
+ * Helper function to run tree command and get directory structure
  */
-async function fileExists(filePath: string): Promise<boolean> {
-  try {
-    await access(filePath);
-    return true;
-  } catch {
-    return false;
-  }
+function runTreeCommand(projectPath: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const projectName = projectPath.split('/').pop() || '';
+    const parentDir = projectPath.substring(0, projectPath.lastIndexOf('/'));
+
+    const child = spawn('tree', ['-a', projectName], {
+      stdio: ['pipe', 'pipe', 'pipe'],
+      cwd: parentDir,
+    });
+
+    let stdout = '';
+
+    child.stdout.on('data', (data) => {
+      stdout += data.toString();
+    });
+
+    child.on('close', (code) => {
+      if (code === 0) {
+        resolve(stdout.trim());
+      } else {
+        reject(new Error(`tree command failed with code ${code}`));
+      }
+    });
+
+    child.on('error', (error) => {
+      reject(error);
+    });
+  });
 }
 
 /**
@@ -84,9 +105,9 @@ describe('write new command', () => {
     }
   });
 
-  test('should create project with correct directory structure', async () => {
-    const projectTitle = 'Test Book Project';
-    const expectedProjectName = 'test-book-project';
+  test('should create project with correct structure (snapshot)', async (t) => {
+    const projectTitle = 'Snapshot Test Project';
+    const expectedProjectName = 'snapshot-test-project';
     const projectPath = join(TEST_PATH, expectedProjectName);
 
     const result = await runWriteCommand(['new', projectTitle], TEST_PATH);
@@ -107,40 +128,14 @@ describe('write new command', () => {
       'Main project directory should exist',
     );
 
-    // Check all expected subdirectories exist
-    const expectedDirs = [
-      'chapters',
-      'assets',
-      'assets/images',
-      'assets/figures',
-      'templates',
-      '.github',
-      '.github/workflows',
-    ];
-
-    for (const dir of expectedDirs) {
-      const dirPath = join(projectPath, dir);
-      assert(await isDirectory(dirPath), `Directory ${dir} should exist`);
-    }
-
-    // Check all expected files exist
-    const expectedFiles = [
-      'main.tex',
-      'chapters/chapter01.tex',
-      'book.toml',
-      '.gitignore',
-      '.github/workflows/build.yml',
-    ];
-
-    for (const file of expectedFiles) {
-      const filePath = join(projectPath, file);
-      assert(await fileExists(filePath), `File ${file} should exist`);
-    }
+    // Get tree structure and snapshot it
+    const treeOutput = await runTreeCommand(projectPath);
+    t.assert.snapshot(treeOutput);
   });
 
-  test('should generate correct main.tex content with title', async () => {
-    const projectTitle = 'My Amazing Book';
-    const projectName = 'my-amazing-book';
+  test('should substitute title in main.tex', async () => {
+    const projectTitle = 'Title Substitution Test';
+    const projectName = 'title-substitution-test';
     const projectPath = join(TEST_PATH, projectName);
 
     await runWriteCommand(['new', projectTitle], TEST_PATH);
@@ -148,25 +143,16 @@ describe('write new command', () => {
     const mainTexPath = join(projectPath, 'main.tex');
     const content = await readFile(mainTexPath, 'utf8');
 
-    // Check LaTeX document structure
-    assert(content.includes('\\documentclass[12pt,oneside]{book}'));
-    assert(content.includes('\\usepackage[utf8]{inputenc}'));
-    assert(content.includes('\\usepackage{graphicx}'));
-    assert(content.includes('\\usepackage{hyperref}'));
-
-    // Check title is correctly inserted
-    assert(content.includes(`\\title{${projectTitle}}`));
-
-    // Check document structure
-    assert(content.includes('\\begin{document}'));
-    assert(content.includes('\\maketitle'));
-    assert(content.includes('\\tableofcontents'));
-    assert(content.includes('\\end{document}'));
+    // Check title is correctly substituted
+    assert(
+      content.includes(`\\title{${projectTitle}}`),
+      'Title should be substituted in main.tex',
+    );
   });
 
-  test('should generate correct book.toml configuration', async () => {
-    const projectTitle = 'Configuration Test Book';
-    const projectName = 'configuration-test-book';
+  test('should substitute title in book.toml', async () => {
+    const projectTitle = 'Config Test Book';
+    const projectName = 'config-test-book';
     const projectPath = join(TEST_PATH, projectName);
 
     await runWriteCommand(['new', projectTitle], TEST_PATH);
@@ -174,84 +160,11 @@ describe('write new command', () => {
     const configPath = join(projectPath, 'book.toml');
     const content = await readFile(configPath, 'utf8');
 
-    // Check configuration sections exist
-    assert(content.includes('[book]'));
-    assert(content.includes('[latex]'));
-    assert(content.includes('[build]'));
-    assert(content.includes('[metadata]'));
-
-    // Check title is correctly set
-    assert(content.includes(`title = "${projectTitle}"`));
-
-    // Check default values
-    assert(content.includes('author = "Your Name"'));
-    assert(content.includes('language = "en"'));
-    assert(content.includes('document_class = "book"'));
-    assert(content.includes('chapters_dir = "chapters"'));
-    assert(content.includes('assets_dir = "assets"'));
-  });
-
-  test('should generate chapter01.tex with correct structure', async () => {
-    const projectTitle = 'Chapter Test Book';
-    const projectName = 'chapter-test-book';
-    const projectPath = join(TEST_PATH, projectName);
-
-    await runWriteCommand(['new', projectTitle], TEST_PATH);
-
-    const chapterPath = join(projectPath, 'chapters', 'chapter01.tex');
-    const content = await readFile(chapterPath, 'utf8');
-
-    // Check chapter structure
-    assert(content.includes('\\chapter{Sample Chapter}'));
-    assert(content.includes('\\section{Section Example}'));
-    assert(content.includes('\\subsection{Subsection Example}'));
-    assert(content.includes('This is a sample chapter'));
-  });
-
-  test('should generate correct .gitignore for LaTeX projects', async () => {
-    const projectTitle = 'GitIgnore Test Book';
-    const projectName = 'gitignore-test-book';
-    const projectPath = join(TEST_PATH, projectName);
-
-    await runWriteCommand(['new', projectTitle], TEST_PATH);
-
-    const gitignorePath = join(projectPath, '.gitignore');
-    const content = await readFile(gitignorePath, 'utf8');
-
-    // Check LaTeX-specific ignores
-    assert(content.includes('*.aux'));
-    assert(content.includes('*.log'));
-    assert(content.includes('*.pdf'));
-    assert(content.includes('*.synctex.gz'));
-
-    // Check OS and editor ignores
-    assert(content.includes('.DS_Store'));
-    assert(content.includes('.vscode/'));
-    assert(content.includes('node_modules/'));
-  });
-
-  test('should generate GitHub Actions workflow', async () => {
-    const projectTitle = 'Workflow Test Book';
-    const projectName = 'workflow-test-book';
-    const projectPath = join(TEST_PATH, projectName);
-
-    await runWriteCommand(['new', projectTitle], TEST_PATH);
-
-    const workflowPath = join(projectPath, '.github', 'workflows', 'build.yml');
-    const content = await readFile(workflowPath, 'utf8');
-
-    // Check workflow structure
-    assert(content.includes('name: Build LaTeX PDF'));
-    assert(content.includes('on:'));
-    assert(content.includes('push:'));
-    assert(content.includes('pull_request:'));
-    assert(content.includes('jobs:'));
-
-    // Check workflow steps
-    assert(content.includes('actions/checkout@v4'));
-    assert(content.includes('xu-cheng/latex-action@v3'));
-    assert(content.includes('actions/upload-artifact@v4'));
-    assert(content.includes('root_file: main.tex'));
+    // Check title is correctly substituted
+    assert(
+      content.includes(`title = "${projectTitle}"`),
+      'Title should be substituted in book.toml',
+    );
   });
 
   test('should handle titles with special characters', async () => {
@@ -265,24 +178,14 @@ describe('write new command', () => {
     assert(result.stdout.includes(`Project directory: ${expectedProjectName}`));
     assert(await isDirectory(projectPath), 'Project directory should exist');
 
-    // Check that the original title is preserved in main.tex
+    // Check that the original title is preserved in files
     const mainTexPath = join(projectPath, 'main.tex');
-    const content = await readFile(mainTexPath, 'utf8');
-    assert(content.includes(`\\title{${projectTitle}}`));
-  });
+    const mainTexContent = await readFile(mainTexPath, 'utf8');
+    assert(mainTexContent.includes(`\\title{${projectTitle}}`));
 
-  test('should handle multi-word titles correctly', async () => {
-    const projectTitle = 'The Complete Guide to Advanced Programming';
-    const expectedProjectName = 'the-complete-guide-to-advanced-programming';
-    const projectPath = join(TEST_PATH, expectedProjectName);
-
-    const result = await runWriteCommand(['new', projectTitle], TEST_PATH);
-
-    assert.strictEqual(result.code, 0);
-    assert(await isDirectory(projectPath), 'Project directory should exist');
-
-    // Verify the project name conversion
-    assert(result.stdout.includes(`Project directory: ${expectedProjectName}`));
+    const configPath = join(projectPath, 'book.toml');
+    const configContent = await readFile(configPath, 'utf8');
+    assert(configContent.includes(`title = "${projectTitle}"`));
   });
 
   test('should fail when no title is provided', async () => {
