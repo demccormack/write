@@ -12,7 +12,7 @@ interface PackageJson {
 }
 
 const packageJson: PackageJson = JSON.parse(
-  readFileSync(join(__dirname, '..', 'package.json'), 'utf-8'),
+  readFileSync(join(__dirname, '..', '..', 'package.json'), 'utf-8'),
 );
 
 export const version = packageJson.version;

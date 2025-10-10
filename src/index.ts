@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { displayName, version } from './version.js';
+import { displayName, version } from './commands/version.js';
 import { createNewProject } from './commands/new.js';
 
 const args = process.argv.slice(2);
