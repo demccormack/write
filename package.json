@@ -45,7 +45,7 @@
     "@eslint/json": "^1.0.1",
     "@eslint/markdown": "^7.2.0",
     "@types/node": "^25.2.3",
-    "eslint": "^9.34.0",
+    "eslint": "^10.0.2",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
     "globals": "^17.3.0",
