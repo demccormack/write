@@ -4,10 +4,12 @@ updates:
     directory: '/'
     schedule:
       interval: 'weekly'
-      day: 'friday'
+      day: 'thursday'
       time: '15:00'
       timezone: 'Pacific/Auckland'
     open-pull-requests-limit: 5
+    cooldown:
+      default-days: 7
     groups:
       development-dependencies:
         dependency-type: 'development'
