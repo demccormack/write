@@ -42,7 +42,7 @@
   "homepage": "https://github.com/demccormack/write#readme",
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@eslint/json": "^1.0.1",
+    "@eslint/json": "^2.0.0",
     "@eslint/markdown": "^8.0.0",
     "@types/node": "^25.2.3",
     "eslint": "^10.0.2",
