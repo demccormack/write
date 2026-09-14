@@ -63,7 +63,7 @@ my-amazing-book
 
 > ⚠️ **Note**: This tool is in early development. The following features are planned:
 
-- [ ] Project scaffolding with conventional directory structure
+- [x] Project scaffolding with conventional directory structure
 - [ ] GitHub repository creation and setup
 - [ ] LaTeX template library (academic, fiction, technical)
 - [ ] GitHub Actions CI/CD pipeline configuration
