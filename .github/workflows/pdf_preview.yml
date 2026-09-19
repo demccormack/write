@@ -78,24 +78,23 @@ jobs:
               issue_number: context.issue.number,
             });
 
-            const existingComment = comments.find(
+            const existingComments = comments.filter(
               comment =>
                 comment.user.type === 'Bot' &&
                 comment.body.includes(marker)
             );
 
-            if (existingComment) {
-              await github.rest.issues.updateComment({
+            for (const comment of existingComments) {
+              await github.rest.issues.deleteComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                comment_id: existingComment.id,
-                body,
-              });
-            } else {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-                body,
+                comment_id: comment.id,
               });
             }
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body,
+            });
