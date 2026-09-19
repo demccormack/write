@@ -25,6 +25,9 @@ jobs:
       - name: Build project
         run: npm run build
 
+      - name: Remove previous sample project
+        run: rm -rf my-amazing-book
+
       - name: Generate sample book project
         run: npm run write -- new "My Amazing Book"
 
