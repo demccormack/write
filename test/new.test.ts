@@ -9,6 +9,7 @@ const TEST_SUBDIR = 'test-new-command';
 const TEST_PATH = join(TMP_DIR, TEST_SUBDIR);
 const CLI_PATH = resolve('dist/index.js');
 const README_FILE = 'docs/README.md';
+const PACKAGE_JSON_PATH = resolve('package.json');
 
 /**
  * Update README with embedded directory structure
@@ -66,11 +67,15 @@ ${treeOutput}
 function runWriteCommand(
   args: string[],
   cwd: string,
+  options: { env?: NodeJS.ProcessEnv } = {},
 ): Promise<{ stdout: string; stderr: string; code: number }> {
   return new Promise((resolve, reject) => {
-    const child = spawn('node', [CLI_PATH, ...args], {
+    // Spawn node by absolute path so a PATH override (e.g. to simulate a
+    // missing `git`) doesn't also prevent node itself from being found.
+    const child = spawn(process.execPath, [CLI_PATH, ...args], {
       stdio: ['pipe', 'pipe', 'pipe'],
       cwd,
+      env: options.env ?? process.env,
     });
 
     let stdout = '';
@@ -102,7 +107,8 @@ function runTreeCommand(projectPath: string): Promise<string> {
     const projectName = projectPath.split('/').pop() || '';
     const parentDir = projectPath.substring(0, projectPath.lastIndexOf('/'));
 
-    const child = spawn('tree', ['-a', projectName], {
+    // Exclude .git so the initialised repository doesn't leak into the structure snapshot
+    const child = spawn('tree', ['-a', '-I', '.git', projectName], {
       stdio: ['pipe', 'pipe', 'pipe'],
       cwd: parentDir,
     });
@@ -137,6 +143,42 @@ async function isDirectory(dirPath: string): Promise<boolean> {
   } catch {
     return false;
   }
+}
+
+/**
+ * Helper function to check if a directory is a git repository
+ */
+async function isGitRepository(dirPath: string): Promise<boolean> {
+  return isDirectory(join(dirPath, '.git'));
+}
+
+/**
+ * Helper function to run a git command and capture output
+ */
+function runGitCommand(
+  args: string[],
+  cwd: string,
+): Promise<{ stdout: string; code: number }> {
+  return new Promise((resolve, reject) => {
+    const child = spawn('git', args, {
+      stdio: ['pipe', 'pipe', 'pipe'],
+      cwd,
+    });
+
+    let stdout = '';
+
+    child.stdout.on('data', (data) => {
+      stdout += data.toString();
+    });
+
+    child.on('close', (code) => {
+      resolve({ stdout, code: code || 0 });
+    });
+
+    child.on('error', (error) => {
+      reject(error);
+    });
+  });
 }
 
 describe('write new command', () => {
@@ -183,6 +225,78 @@ describe('write new command', () => {
     const treeOutput = await runTreeCommand(projectPath);
     t.assert.snapshot(treeOutput);
     await updateReadmeWithStructure(treeOutput, projectTitle);
+  });
+
+  test('should initialize a git repository with an initial commit', async () => {
+    const projectTitle = 'Git Init Test Book';
+    const projectName = 'git-init-test-book';
+    const projectPath = join(TEST_PATH, projectName);
+
+    const result = await runWriteCommand(['new', projectTitle], TEST_PATH);
+
+    assert.strictEqual(result.code, 0);
+    assert(
+      await isGitRepository(projectPath),
+      'Project directory should be a git repository',
+    );
+
+    const log = await runGitCommand(['log', '--oneline'], projectPath);
+    const commitLines = log.stdout.trim().split('\n').filter(Boolean);
+    assert.strictEqual(
+      commitLines.length,
+      1,
+      'Project should have exactly one initial commit',
+    );
+
+    const status = await runGitCommand(['status', '--porcelain'], projectPath);
+    assert.strictEqual(
+      status.stdout.trim(),
+      '',
+      'Working tree should be clean after the initial commit',
+    );
+
+    const { version } = JSON.parse(
+      await readFile(PACKAGE_JSON_PATH, 'utf8'),
+    ) as { version: string };
+    const message = await runGitCommand(
+      ['log', '-1', '--pretty=%B'],
+      projectPath,
+    );
+    assert.strictEqual(
+      message.stdout.trim(),
+      [
+        'Initial commit',
+        '',
+        `Create project using write v${version}`,
+        '',
+        'For more details about this tool, see https://write.art/open-source',
+      ].join('\n'),
+      'Initial commit message should follow the expected template',
+    );
+  });
+
+  test('should fail and remove the project directory when git is unavailable', async () => {
+    const projectTitle = 'No Git Test Book';
+    const projectName = 'no-git-test-book';
+    const projectPath = join(TEST_PATH, projectName);
+
+    // Point PATH at a directory that has no `git` binary
+    const noGitPath = join(TEST_PATH, 'no-git-path');
+    await mkdir(noGitPath, { recursive: true });
+
+    const result = await runWriteCommand(['new', projectTitle], TEST_PATH, {
+      env: { ...process.env, PATH: noGitPath },
+    });
+
+    assert.notStrictEqual(result.code, 0);
+    assert(
+      result.stderr.includes('git') && /install/i.test(result.stderr),
+      'Should instruct the user to install git',
+    );
+    assert(
+      !(await isDirectory(projectPath)),
+      'Project directory should be removed when git initialization fails',
+    );
   });
 
   test('should substitute title in main.tex', async () => {
