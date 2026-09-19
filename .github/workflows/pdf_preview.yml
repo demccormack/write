@@ -7,8 +7,8 @@ jobs:
   build-pdf-preview:
     runs-on: ubuntu-latest
     permissions:
-      actions: write
       contents: read
+      pull-requests: write
 
     steps:
       - name: Checkout code
@@ -45,8 +45,49 @@ jobs:
           fairy-dust-sprinkling-made-easy/fairy-dust-sprinkling-made-easy-${GITHUB_SHA}.pdf
 
       - name: Upload PDF artifact
+        id: upload-pdf
         uses: actions/upload-artifact@v7
         with:
           name: fairy-dust-sprinkling-made-easy-${{ github.sha }}.pdf
           path: fairy-dust-sprinkling-made-easy/fairy-dust-sprinkling-made-easy-${{ github.sha }}.pdf
           archive: false
+
+      - name: Add PDF preview to PR
+        uses: actions/github-script@v9
+        env:
+          ARTIFACT_URL: ${{ steps.upload-pdf.outputs.artifact-url }}
+        with:
+          script: |
+            const marker = '<!-- pdf-preview -->';
+            const body = `${marker}
+            ### 📖 PDF Preview
+
+            [fairy-dust-sprinkling-made-easy-${{ github.sha }}.pdf](${process.env.ARTIFACT_URL})`;
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const existingComment = comments.find(
+              comment =>
+                comment.user.type === 'Bot' &&
+                comment.body.includes(marker)
+            );
+
+            if (existingComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existingComment.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
