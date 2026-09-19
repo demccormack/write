@@ -1,5 +1,6 @@
 import { test, describe, before, after } from 'node:test';
 import assert from 'node:assert';
+import { spawn } from 'node:child_process';
 import { mkdir, rm, readFile, stat, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { createNewProject } from '../src/commands/new.ts';
