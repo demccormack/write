@@ -62,7 +62,7 @@ jobs:
             const body = `${marker}
             ### 📖 PDF Preview
 
-            [fairy-dust-sprinkling-made-easy-${{ github.sha }}.pdf](${process.env.ARTIFACT_URL})`;
+            [fairy-dust-sprinkling-made-easy-${{ github.sha }}.pdf](${process.env.ARTIFACT_URL}){:target="_blank"}`;
 
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
