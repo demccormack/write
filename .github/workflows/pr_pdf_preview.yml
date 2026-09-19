@@ -27,19 +27,26 @@ jobs:
         run: npm run build
 
       - name: Remove previous sample project
-        run: rm -rf my-amazing-book
+        run: rm -rf fairy-dust-sprinkling-made-easy
 
       - name: Generate sample book project
-        run: npm run write -- new "My Amazing Book"
+        run: npm run write -- new "Fairy Dust Sprinkling Made Easy"
 
       - name: Build PDF
         uses: xu-cheng/latex-action@v3
         with:
-          working_directory: my-amazing-book
+          working_directory: fairy-dust-sprinkling-made-easy
           root_file: main.tex
+
+      - name: Rename PDF with commit SHA
+        run: >
+          mv
+          fairy-dust-sprinkling-made-easy/main.pdf
+          fairy-dust-sprinkling-made-easy/fairy-dust-sprinkling-made-easy-${GITHUB_SHA}.pdf
 
       - name: Upload PDF artifact
         uses: actions/upload-artifact@v4
         with:
-          name: my-amazing-book-pdf
-          path: my-amazing-book/main.pdf
+          name: fairy-dust-sprinkling-made-easy-pdf-${{ github.sha }}
+          path: fairy-dust-sprinkling-made-easy/fairy-dust-sprinkling-made-easy-${{ github.sha }}.pdf
+          compression-level: 0
