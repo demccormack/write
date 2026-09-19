@@ -18,7 +18,7 @@ describe('PR PDF preview workflow', () => {
     );
     assert.match(
       workflow,
-      /^  build-pdf-preview:\n[\s\S]*^    permissions:\n      contents: read$/m,
+      /^  build-pdf-preview:\n[\s\S]*^    permissions:\n      actions: write\n      contents: read$/m,
     );
     assert.match(
       workflow,
