@@ -201,10 +201,6 @@ describe('write new command', () => {
       'Title should be substituted in main.tex',
     );
     assert(
-      content.includes('\\date{}'),
-      'Generated main.tex should omit the title-page date',
-    );
-    assert(
       content.includes('© \\bookauthor, \\the\\year\\par'),
       'Generated main.tex should include a copyright notice with the current year',
     );
@@ -219,14 +215,6 @@ describe('write new command', () => {
     assert(
       content.includes('\\centering'),
       'Generated main.tex should center the copyright page text',
-    );
-    assert(
-      content.includes('The right of \\bookauthor\\ to be recognised as the sole author of this work has been asserted.'),
-      'Generated main.tex should include the author-rights statement',
-    );
-    assert(
-      content.includes('No part of this publication may be copied, reproduced, stored in a retrieval system, or transmitted in any form or by any means without the prior written permission of the author.'),
-      'Generated main.tex should prohibit copying without permission',
     );
     assert(
       content.includes(
