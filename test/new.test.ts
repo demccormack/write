@@ -200,6 +200,26 @@ describe('write new command', () => {
       content.includes(`\\title{${projectTitle}}`),
       'Title should be substituted in main.tex',
     );
+    assert(
+      content.includes('\\date{}'),
+      'Generated main.tex should omit the title-page date',
+    );
+    assert(
+      content.includes('(c) \\bookauthor, \\the\\year'),
+      'Generated main.tex should include a copyright notice with the current year',
+    );
+    assert(
+      content.includes(
+        'This book began with Write, the free and open-source book creation tool.',
+      ),
+      'Generated main.tex should acknowledge Write on the copyright page',
+    );
+    assert(
+      content.includes(
+        '\\href{https://write.art/open-source}{https://write.art/open-source}',
+      ),
+      'Generated main.tex should include a clickable Write URL',
+    );
   });
 
   test('should substitute title in book.toml', async () => {

@@ -7,13 +7,23 @@
 \usepackage{geometry}
 \geometry{margin=1in}
 
+\newcommand{\bookauthor}{Your Name}
 \title{{{BOOK_TITLE}}}
-\author{Your Name}
-\date{\today}
+\author{\bookauthor}
+\date{}
 
 \begin{document}
 
 \maketitle
+\clearpage
+\thispagestyle{empty}
+\vspace*{\fill}
+\noindent (c) \bookauthor, \the\year
+
+\vspace{1em}
+\noindent This book began with Write, the free and open-source book creation tool. Start your own book, contribute to the project, or support its development at \href{https://write.art/open-source}{https://write.art/open-source}
+\vspace*{\fill}
+\clearpage
 
 \tableofcontents
 
