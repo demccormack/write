@@ -1,0 +1,39 @@
+name: PR PDF Preview
+
+on:
+  pull_request:
+
+jobs:
+  build-pdf-preview:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run build
+
+      - name: Generate sample book project
+        run: npm run write -- new "My Amazing Book"
+
+      - name: Build PDF
+        uses: xu-cheng/latex-action@v3
+        with:
+          working_directory: my-amazing-book
+          root_file: main.tex
+
+      - name: Upload PDF artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: my-amazing-book-pdf
+          path: my-amazing-book/main.pdf
