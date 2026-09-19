@@ -1,4 +1,4 @@
-name: PR PDF Preview
+name: PDF Preview
 
 on:
   pull_request:
@@ -12,10 +12,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version-file: '.nvmrc'
           cache: npm
@@ -30,10 +30,10 @@ jobs:
         run: rm -rf fairy-dust-sprinkling-made-easy
 
       - name: Generate sample book project
-        run: npm run write -- new "Fairy Dust Sprinkling Made Easy"
+        run: npm run write new "Fairy Dust Sprinkling Made Easy"
 
       - name: Build PDF
-        uses: xu-cheng/latex-action@v3
+        uses: xu-cheng/latex-action@v4
         with:
           working_directory: fairy-dust-sprinkling-made-easy
           root_file: main.tex
@@ -45,8 +45,8 @@ jobs:
           fairy-dust-sprinkling-made-easy/fairy-dust-sprinkling-made-easy-${GITHUB_SHA}.pdf
 
       - name: Upload PDF artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
-          name: fairy-dust-sprinkling-made-easy-pdf-${{ github.sha }}
+          name: fairy-dust-sprinkling-made-easy-${{ github.sha }}.pdf
           path: fairy-dust-sprinkling-made-easy/fairy-dust-sprinkling-made-easy-${{ github.sha }}.pdf
-          compression-level: 0
+          archive: false
