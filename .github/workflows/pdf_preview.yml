@@ -56,13 +56,21 @@ jobs:
         uses: actions/github-script@v9
         env:
           ARTIFACT_URL: ${{ steps.upload-pdf.outputs.artifact-url }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          MERGE_SHA: ${{ github.sha }}
         with:
           script: |
             const marker = '<!-- pdf-preview -->';
+            const headSha = process.env.PR_HEAD_SHA;
+            const mergeSha = process.env.MERGE_SHA;
+
             const body = `${marker}
             ### 📖 PDF Preview
 
-            [fairy-dust-sprinkling-made-easy-${{ github.sha }}.pdf](${process.env.ARTIFACT_URL}){:target="_blank"}`;
+            **[Open PDF preview ↗](${process.env.ARTIFACT_URL})**
+
+            Includes PR commit \`${headSha.substring(0, 7)}\`  
+            Built from merge commit \`${mergeSha.substring(0, 7)}\``;
 
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
