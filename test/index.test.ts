@@ -1,11 +1,19 @@
-import { test, describe } from 'node:test';
+import { test, describe, before } from 'node:test';
 import assert from 'node:assert';
 import { spawn } from 'node:child_process';
+import { resolve } from 'path';
+import { ensureCliBuilt } from './helpers/ensure-cli-built.ts';
+
+const CLI_PATH = resolve('dist/index.js');
 
 describe('Version flag', () => {
+  before(async () => {
+    await ensureCliBuilt();
+  });
+
   test('should print version and exit with -v flag', async () => {
     return new Promise((resolve, reject) => {
-      const child = spawn('node', ['dist/index.js', '-v'], {
+      const child = spawn('node', [CLI_PATH, '-v'], {
         stdio: ['pipe', 'pipe', 'pipe'],
       });
 
@@ -39,7 +47,7 @@ describe('Version flag', () => {
 
   test('should print version and exit with --version flag', async () => {
     return new Promise((resolve, reject) => {
-      const child = spawn('node', ['dist/index.js', '--version'], {
+      const child = spawn('node', [CLI_PATH, '--version'], {
         stdio: ['pipe', 'pipe', 'pipe'],
       });
 

@@ -3,6 +3,7 @@ import assert from 'node:assert';
 import { spawn } from 'node:child_process';
 import { mkdir, rm, readFile, stat, writeFile } from 'fs/promises';
 import { join, resolve } from 'path';
+import { ensureCliBuilt } from './helpers/ensure-cli-built.ts';
 
 const TMP_DIR = 'tmp';
 const TEST_SUBDIR = 'test-new-command';
@@ -141,6 +142,8 @@ async function isDirectory(dirPath: string): Promise<boolean> {
 
 describe('write new command', () => {
   before(async () => {
+    await ensureCliBuilt();
+
     // Ensure tmp directory exists and create test subdirectory
     await mkdir(TMP_DIR, { recursive: true });
     await mkdir(TEST_PATH, { recursive: true });
