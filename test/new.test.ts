@@ -205,8 +205,28 @@ describe('write new command', () => {
       'Generated main.tex should omit the title-page date',
     );
     assert(
-      content.includes('(c) \\bookauthor, \\the\\year'),
+      content.includes('© \\bookauthor, \\the\\year\\par'),
       'Generated main.tex should include a copyright notice with the current year',
+    );
+    assert(
+      content.includes('\\begingroup'),
+      'Generated main.tex should scope the copyright page formatting',
+    );
+    assert(
+      content.includes('\\small'),
+      'Generated main.tex should make the copyright page text smaller',
+    );
+    assert(
+      content.includes('\\centering'),
+      'Generated main.tex should center the copyright page text',
+    );
+    assert(
+      content.includes('The right of \\bookauthor\\ to be recognised as the sole author of this work has been asserted.'),
+      'Generated main.tex should include the author-rights statement',
+    );
+    assert(
+      content.includes('No part of this publication may be copied, reproduced, stored in a retrieval system, or transmitted in any form or by any means without the prior written permission of the author.'),
+      'Generated main.tex should prohibit copying without permission',
     );
     assert(
       content.includes(
