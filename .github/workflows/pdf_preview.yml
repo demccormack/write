@@ -1,0 +1,100 @@
+name: PDF Preview
+
+on:
+  pull_request:
+
+jobs:
+  build-pdf-preview:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run build
+
+      - name: Remove previous sample project
+        run: rm -rf fairy-dust-sprinkling-made-easy
+
+      - name: Generate sample book project
+        run: npm run write new "Fairy Dust Sprinkling Made Easy"
+
+      - name: Build PDF
+        uses: xu-cheng/latex-action@v4
+        with:
+          working_directory: fairy-dust-sprinkling-made-easy
+          root_file: main.tex
+
+      - name: Rename PDF with commit SHA
+        run: >
+          mv
+          fairy-dust-sprinkling-made-easy/main.pdf
+          fairy-dust-sprinkling-made-easy/fairy-dust-sprinkling-made-easy-${GITHUB_SHA}.pdf
+
+      - name: Upload PDF artifact
+        id: upload-pdf
+        uses: actions/upload-artifact@v7
+        with:
+          name: fairy-dust-sprinkling-made-easy-${{ github.sha }}.pdf
+          path: fairy-dust-sprinkling-made-easy/fairy-dust-sprinkling-made-easy-${{ github.sha }}.pdf
+          archive: false
+
+      - name: Add PDF preview to PR
+        uses: actions/github-script@v9
+        env:
+          ARTIFACT_URL: ${{ steps.upload-pdf.outputs.artifact-url }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          MERGE_SHA: ${{ github.sha }}
+        with:
+          script: |
+            const marker = '<!-- pdf-preview -->';
+            const headSha = process.env.PR_HEAD_SHA;
+            const mergeSha = process.env.MERGE_SHA;
+
+            const body = `${marker}
+            ### 📖 PDF Preview
+
+            **[Open PDF preview ↗](${process.env.ARTIFACT_URL})**
+
+            Includes PR commit \`${headSha.substring(0, 7)}\`  
+            Built from merge commit \`${mergeSha.substring(0, 7)}\``;
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const existingComments = comments.filter(
+              comment =>
+                comment.user.type === 'Bot' &&
+                comment.body.includes(marker)
+            );
+
+            for (const comment of existingComments) {
+              await github.rest.issues.deleteComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: comment.id,
+              });
+            }
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body,
+            });
