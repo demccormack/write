@@ -35,8 +35,10 @@ This creates a local directory with the following structure:
 ```
 my-amazing-book
 ├── .github
+│   ├── copilot-instructions.md
 │   └── workflows
-│       └── build.yml
+│       ├── build.yml
+│       └── pdf_preview.yml
 ├── .gitignore
 ├── assets
 │   ├── figures
@@ -47,7 +49,7 @@ my-amazing-book
 ├── main.tex
 └── templates
 
-8 directories, 5 files
+8 directories, 7 files
 ```
 
 <!-- END AUTO-GENERATED STRUCTURE -->

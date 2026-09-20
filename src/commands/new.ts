@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const TEMPLATES_DIR = join(__dirname, '..', 'templates');
+const DEFAULT_AUTHOR = 'Your Name';
 
 /**
  * Read a template file and replace placeholders with actual values
@@ -80,6 +81,7 @@ export async function createNewProject(title: string): Promise<void> {
     // Create main.tex file
     const mainTexContent = await processTemplate('main.tex', {
       BOOK_TITLE: title,
+      BOOK_AUTHOR: DEFAULT_AUTHOR,
     });
     await writeFile(join(projectPath, 'main.tex'), mainTexContent);
 
@@ -92,6 +94,7 @@ export async function createNewProject(title: string): Promise<void> {
     // Create book.toml configuration
     const bookTomlContent = await processTemplate('book.toml', {
       BOOK_TITLE: title,
+      BOOK_AUTHOR: DEFAULT_AUTHOR,
     });
     await writeFile(join(projectPath, 'book.toml'), bookTomlContent);
 
@@ -102,6 +105,26 @@ export async function createNewProject(title: string): Promise<void> {
     await copyTemplate(
       'build.yml',
       join(projectPath, '.github', 'workflows', 'build.yml'),
+    );
+
+    const pdfPreviewContent = await processTemplate('pdf_preview.yml', {
+      BOOK_DIRECTORY: projectName,
+    });
+    await writeFile(
+      join(projectPath, '.github', 'workflows', 'pdf_preview.yml'),
+      pdfPreviewContent,
+    );
+
+    const copilotInstructionsContent = await processTemplate(
+      'copilot-instructions.md',
+      {
+        BOOK_TITLE: title,
+        BOOK_AUTHOR: DEFAULT_AUTHOR,
+      },
+    );
+    await writeFile(
+      join(projectPath, '.github', 'copilot-instructions.md'),
+      copilotInstructionsContent,
     );
 
     console.log(`✓ Created project directory structure in ${projectName}/`);

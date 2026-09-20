@@ -246,6 +246,64 @@ describe('write new command', () => {
       content.includes(`title = "${projectTitle}"`),
       'Title should be substituted in book.toml',
     );
+    assert(
+      content.includes('author = "Your Name"'),
+      'Default author should be substituted in book.toml',
+    );
+  });
+
+  test('should create templated automation files', async () => {
+    const projectTitle = 'Automation Test Book';
+    const projectName = 'automation-test-book';
+    const projectPath = join(TEST_PATH, projectName);
+
+    await runCreateNewProject(projectTitle, TEST_PATH);
+
+    const pdfPreviewPath = join(
+      projectPath,
+      '.github',
+      'workflows',
+      'pdf_preview.yml',
+    );
+    const pdfPreviewContent = await readFile(pdfPreviewPath, 'utf8');
+    assert(
+      pdfPreviewContent.includes('name: PDF Preview'),
+      'Generated project should include a PDF preview workflow',
+    );
+    assert(
+      pdfPreviewContent.includes(
+        `run: mv main.pdf ${projectName}-\${GITHUB_SHA}.pdf`,
+      ),
+      'Generated PDF preview workflow should rename the PDF using the project name',
+    );
+    assert(
+      pdfPreviewContent.includes(
+        `name: ${projectName}-\${{ github.sha }}.pdf`,
+      ),
+      'Generated PDF preview workflow should upload an artifact named for the project',
+    );
+
+    const copilotInstructionsPath = join(
+      projectPath,
+      '.github',
+      'copilot-instructions.md',
+    );
+    const copilotInstructionsContent = await readFile(
+      copilotInstructionsPath,
+      'utf8',
+    );
+    assert(
+      copilotInstructionsContent.includes(`*${projectTitle}*`),
+      'Copilot instructions should include the generated book title',
+    );
+    assert(
+      copilotInstructionsContent.includes('written by Your Name'),
+      'Copilot instructions should include the generated author',
+    );
+    assert(
+      copilotInstructionsContent.includes('latexmk -pdf main.tex'),
+      'Copilot instructions should include the build command guidance',
+    );
   });
 
   test('should handle titles with special characters', async () => {
