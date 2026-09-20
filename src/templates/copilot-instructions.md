@@ -2,7 +2,7 @@
 
 ## Project overview
 
-This repository contains the LaTeX source for *{{BOOK_TITLE}}*, a book being written by {{BOOK_AUTHOR}}.
+This repository contains the LaTeX source for _{{BOOK_TITLE}}_, a book being written by {{BOOK_AUTHOR}}.
 
 The content of the book is written by the author. Copilot's role in this repository is solely technical: maintaining and improving the LaTeX code, document structure, build system, and supporting tooling.
 
@@ -13,6 +13,7 @@ Self-expression is a sacred act. The author's words are theirs, and theirs alone
 Do not rewrite, edit, "improve", modernise, correct, or otherwise alter the wording of the book unless the prompt or issue explicitly asks for a textual change.
 
 This includes apparent:
+
 - spelling or grammatical errors
 - unusual punctuation
 - unconventional capitalisation
@@ -39,12 +40,14 @@ unless the repository's existing configuration specifies a different build comma
 Follow the existing LaTeX structure and conventions rather than introducing new packages or abstractions unnecessarily.
 
 Prefer:
+
 - simple, idiomatic LaTeX
 - semantic commands over repeated formatting markup
 - reusable commands/environments when formatting is genuinely shared
 - small changes appropriate to the issue being addressed
 
 Avoid:
+
 - unnecessary dependencies
 - large-scale restructuring unrelated to the issue
 - generated PDF/build artifacts in Git unless the repository already intentionally tracks them

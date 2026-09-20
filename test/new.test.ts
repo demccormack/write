@@ -277,9 +277,7 @@ describe('write new command', () => {
       'Generated PDF preview workflow should rename the PDF using the project name',
     );
     assert(
-      pdfPreviewContent.includes(
-        `name: ${projectName}-\${{ github.sha }}.pdf`,
-      ),
+      pdfPreviewContent.includes(`${projectName}-\${{ github.sha }}.pdf`),
       'Generated PDF preview workflow should upload an artifact named for the project',
     );
 
@@ -293,7 +291,9 @@ describe('write new command', () => {
       'utf8',
     );
     assert(
-      copilotInstructionsContent.includes(`*${projectTitle}*`),
+      copilotInstructionsContent.includes(
+        `This repository contains the LaTeX source for _${projectTitle}_,`,
+      ),
       'Copilot instructions should include the generated book title',
     );
     assert(

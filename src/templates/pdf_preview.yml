@@ -26,8 +26,8 @@ jobs:
         id: upload-pdf
         uses: actions/upload-artifact@v7
         with:
-          name: {{BOOK_DIRECTORY}}-${{ github.sha }}.pdf
-          path: {{BOOK_DIRECTORY}}-${{ github.sha }}.pdf
+          name: '{{BOOK_DIRECTORY}}-${{ github.sha }}.pdf'
+          path: '{{BOOK_DIRECTORY}}-${{ github.sha }}.pdf'
           archive: false
 
       - name: Add PDF preview to PR
