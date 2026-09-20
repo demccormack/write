@@ -210,7 +210,7 @@ describe('write new command', () => {
       'Generated main.tex should scope the copyright page formatting',
     );
     assert(
-      content.includes('\\small'),
+      content.includes('\\tiny'),
       'Generated main.tex should make the copyright page text smaller',
     );
     assert(
@@ -225,7 +225,7 @@ describe('write new command', () => {
     );
     assert(
       content.includes(
-        '\\href{https://write.art/open-source}{https://write.art/open-source}',
+        '\\href{https://write.art/open-source}{write.art/open-source}',
       ),
       'Generated main.tex should include a clickable Write URL',
     );
