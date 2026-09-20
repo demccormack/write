@@ -1,6 +1,6 @@
 [book]
 title = "{{BOOK_TITLE}}"
-author = "Your Name"
+author = "{{BOOK_AUTHOR}}"
 language = "en"
 
 [latex]

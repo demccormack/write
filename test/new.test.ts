@@ -246,6 +246,68 @@ describe('write new command', () => {
       content.includes(`title = "${projectTitle}"`),
       'Title should be substituted in book.toml',
     );
+    assert(
+      content.includes('author = "Your Name"'),
+      'Default author should be substituted in book.toml',
+    );
+  });
+
+  test('should create templated automation files', async () => {
+    const projectTitle = 'Automation Test Book';
+    const projectName = 'automation-test-book';
+    const projectPath = join(TEST_PATH, projectName);
+
+    await runCreateNewProject(projectTitle, TEST_PATH);
+
+    const buildWorkflowPath = join(
+      projectPath,
+      '.github',
+      'workflows',
+      'build.yml',
+    );
+    const buildWorkflowContent = await readFile(buildWorkflowPath, 'utf8');
+    assert(
+      buildWorkflowContent.includes('name: Build LaTeX PDF'),
+      'Generated project should include the build workflow',
+    );
+    assert(
+      buildWorkflowContent.includes(
+        `run: mv main.pdf ${projectName}-\${{ github.sha }}.pdf`,
+      ),
+      'Generated build workflow should rename the PDF using the project name',
+    );
+    assert(
+      buildWorkflowContent.includes(`${projectName}-\${{ github.sha }}.pdf`),
+      'Generated build workflow should upload an artifact named for the project',
+    );
+    assert(
+      buildWorkflowContent.includes("if: github.event_name == 'pull_request'"),
+      'Generated build workflow should only comment on pull requests',
+    );
+
+    const copilotInstructionsPath = join(
+      projectPath,
+      '.github',
+      'copilot-instructions.md',
+    );
+    const copilotInstructionsContent = await readFile(
+      copilotInstructionsPath,
+      'utf8',
+    );
+    assert(
+      copilotInstructionsContent.includes(
+        `This repository contains the LaTeX source for _${projectTitle}_,`,
+      ),
+      'Copilot instructions should include the generated book title',
+    );
+    assert(
+      copilotInstructionsContent.includes('written by Your Name'),
+      'Copilot instructions should include the generated author',
+    );
+    assert(
+      copilotInstructionsContent.includes('latexmk -pdf main.tex'),
+      'Copilot instructions should include the build command guidance',
+    );
   });
 
   test('should handle titles with special characters', async () => {
