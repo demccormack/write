@@ -259,26 +259,32 @@ describe('write new command', () => {
 
     await runCreateNewProject(projectTitle, TEST_PATH);
 
-    const pdfPreviewPath = join(
+    const buildWorkflowPath = join(
       projectPath,
       '.github',
       'workflows',
-      'pdf_preview.yml',
+      'build.yml',
     );
-    const pdfPreviewContent = await readFile(pdfPreviewPath, 'utf8');
+    const buildWorkflowContent = await readFile(buildWorkflowPath, 'utf8');
     assert(
-      pdfPreviewContent.includes('name: PDF Preview'),
-      'Generated project should include a PDF preview workflow',
+      buildWorkflowContent.includes('name: Build LaTeX PDF'),
+      'Generated project should include the build workflow',
     );
     assert(
-      pdfPreviewContent.includes(
-        `run: mv main.pdf ${projectName}-\${GITHUB_SHA}.pdf`,
+      buildWorkflowContent.includes(
+        `run: mv main.pdf ${projectName}-\${{ github.sha }}.pdf`,
       ),
-      'Generated PDF preview workflow should rename the PDF using the project name',
+      'Generated build workflow should rename the PDF using the project name',
     );
     assert(
-      pdfPreviewContent.includes(`${projectName}-\${{ github.sha }}.pdf`),
-      'Generated PDF preview workflow should upload an artifact named for the project',
+      buildWorkflowContent.includes(
+        `name: ${projectName}-\${{ github.sha }}.pdf`,
+      ),
+      'Generated build workflow should upload an artifact named for the project',
+    );
+    assert(
+      buildWorkflowContent.includes("if: github.event_name == 'pull_request'"),
+      'Generated build workflow should only comment on pull requests',
     );
 
     const copilotInstructionsPath = join(

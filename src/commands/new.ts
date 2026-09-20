@@ -101,18 +101,13 @@ export async function createNewProject(title: string): Promise<void> {
     // Create .gitignore for LaTeX projects
     await copyTemplate('.gitignore', join(projectPath, '.gitignore'));
 
-    // Create GitHub Actions workflow for PDF builds
-    await copyTemplate(
-      'build.yml',
-      join(projectPath, '.github', 'workflows', 'build.yml'),
-    );
-
-    const pdfPreviewContent = await processTemplate('pdf_preview.yml', {
+    // Create GitHub Actions workflow for PDF builds and previews
+    const buildWorkflowContent = await processTemplate('build.yml', {
       BOOK_DIRECTORY: projectName,
     });
     await writeFile(
-      join(projectPath, '.github', 'workflows', 'pdf_preview.yml'),
-      pdfPreviewContent,
+      join(projectPath, '.github', 'workflows', 'build.yml'),
+      buildWorkflowContent,
     );
 
     const copilotInstructionsContent = await processTemplate(

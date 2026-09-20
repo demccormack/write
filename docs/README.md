@@ -37,8 +37,7 @@ my-amazing-book
 ├── .github
 │   ├── copilot-instructions.md
 │   └── workflows
-│       ├── build.yml
-│       └── pdf_preview.yml
+│       └── build.yml
 ├── .gitignore
 ├── assets
 │   ├── figures
@@ -49,7 +48,7 @@ my-amazing-book
 ├── main.tex
 └── templates
 
-8 directories, 7 files
+8 directories, 6 files
 ```
 
 <!-- END AUTO-GENERATED STRUCTURE -->
