@@ -69,8 +69,8 @@ jobs:
 
             **[Open PDF preview ↗](${process.env.ARTIFACT_URL})**
 
-            Includes PR commit \`${headSha.substring(0, 7)}\`  
-            Built from merge commit \`${mergeSha.substring(0, 7)}\``;
+            Includes PR commit ${headSha.substring(0, 7)}  
+            Built from merge commit ${mergeSha.substring(0, 7)}`;
 
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
