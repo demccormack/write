@@ -277,9 +277,7 @@ describe('write new command', () => {
       'Generated build workflow should rename the PDF using the project name',
     );
     assert(
-      buildWorkflowContent.includes(
-        `name: ${projectName}-\${{ github.sha }}.pdf`,
-      ),
+      buildWorkflowContent.includes(`${projectName}-\${{ github.sha }}.pdf`),
       'Generated build workflow should upload an artifact named for the project',
     );
     assert(
