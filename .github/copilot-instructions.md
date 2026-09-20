@@ -35,7 +35,7 @@ it only generates project structure, templates, and CI config for the books it c
   `package.json` at runtime (not a generated file) — this is the single source of truth for the
   CLI's reported version/name.
 - `src/templates/` is copied into `dist/templates` by the build step (`cp -r src/templates
-  dist/`, see `package.json` `build` script) — it is NOT compiled by `tsc`. Any new template file
+dist/`, see `package.json` `build` script) — it is NOT compiled by `tsc`. Any new template file
   must be added here and referenced via `processTemplate`/`copyTemplate` in `new.ts`; it does not
   need to be TypeScript.
 - The generated project's own CI workflow template lives at `src/templates/build.yml` — this is
