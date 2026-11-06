@@ -1,11 +1,12 @@
-\chapter{Sample Chapter}
+#pagebreak(weak: true)
+= Sample Chapter
 
 This is a sample chapter. You can edit this file or create new chapter files in the chapters/ directory.
 
-\section{Section Example}
+== Section Example
 
 Write your content here.
 
-\subsection{Subsection Example}
+=== Subsection Example
 
 More content...

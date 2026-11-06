@@ -2,17 +2,17 @@
 
 **The future of book creation tooling**
 
-A scaffolding tool that creates professional book projects with LaTeX typesetting, Git version control, and automated CI/CD publishing pipelines.
+A scaffolding tool that creates professional book projects with Typst typesetting, Git version control, and automated CI/CD publishing pipelines.
 
 ## What This Tool Does
 
 `write` sets up the infrastructure for serious book writing by creating a complete project with:
 
-- 📁 **Project scaffolding** - Organized directory structure for LaTeX books
+- 📁 **Project scaffolding** - Organized directory structure for Typst books
 - 🔄 **Git repository** - Initialized with proper `.gitignore` and structure
 - 🚀 **GitHub integration** - Repository creation and CI/CD setup
 - ⚡ **Automated builds** - GitHub Actions to compile PDFs on every commit
-- 📚 **LaTeX templates** - Professional book layouts ready to use
+- 📚 **Typst templates** - Professional book layouts ready to use
 
 ## Quick Start
 
@@ -35,6 +35,7 @@ This creates a local directory with the following structure:
 ```
 my-amazing-book
 ├── .github
+│   ├── copilot-instructions.md
 │   └── workflows
 │       └── build.yml
 ├── .gitignore
@@ -43,18 +44,18 @@ my-amazing-book
 │   └── images
 ├── book.toml
 ├── chapters
-│   └── chapter01.tex
-├── main.tex
+│   └── chapter01.typ
+├── main.typ
 └── templates
 
-8 directories, 5 files
+8 directories, 6 files
 ```
 
 <!-- END AUTO-GENERATED STRUCTURE -->
 
 ### What You Do Next
 
-1. **Edit in your preferred LaTeX editor** (TeXStudio, VS Code, Overleaf, etc.)
+1. **Edit in your preferred Typst editor** (VS Code with Tinymist, the Typst web app, etc.)
 2. **Commit changes to Git** - every idea, immortalized in your git log
 3. **Collaborate via pull requests** - built-in review process
 4. **Download PDFs from GitHub Actions** - share early previews with interested parties
@@ -65,7 +66,7 @@ my-amazing-book
 
 - [ ] Project scaffolding with conventional directory structure
 - [ ] GitHub repository creation and setup
-- [ ] LaTeX template library (academic, fiction, technical)
+- [ ] Typst template library (academic, fiction, technical)
 - [ ] GitHub Actions CI/CD pipeline configuration
 - [ ] Automated PDF builds on commit/PR
 - [ ] Multiple output formats (PDF, EPUB, HTML)
@@ -84,7 +85,7 @@ This tool **does not** provide a writing interface. Instead, it:
 - Creates the foundation for professional book publishing
 - Automates the boring infrastructure setup
 - Lets you focus on writing, not tooling
-- Uses industry-standard tools (Git, GitHub, LaTeX)
+- Uses industry-standard tools (Git, GitHub, Typst)
 - Makes backups an integral part of your writing process
 - Enables collaborative workflows via pull requests
 
@@ -93,7 +94,7 @@ This tool **does not** provide a writing interface. Instead, it:
 - Node.js
 - Git (for version control)
 - GitHub account (for repository hosting and CI/CD)
-- LaTeX editor (TeXStudio, VS Code, Overleaf, or another editor of your choice)
+- Typst editor (VS Code with Tinymist, the Typst web app, or another editor of your choice)
 
 ## Future Commands
 
@@ -104,7 +105,7 @@ write publish                    # Create GitHub repo + CI
 
 # Project management
 write chapter "Chapter Name"     # Add new chapter file
-write build                      # Local PDF build (if LaTeX installed)
+write build                      # Local PDF build (if Typst installed)
 write status                     # Git status + build info
 ```
 

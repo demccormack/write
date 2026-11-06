@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const TEMPLATES_DIR = join(__dirname, '..', 'templates');
+const DEFAULT_AUTHOR = 'Your Name';
 
 /**
  * Read a template file and replace placeholders with actual values
@@ -49,13 +50,20 @@ function titleToDirectoryName(title: string): string {
 }
 
 /**
- * Create a new LaTeX book project with scaffolding
+ * Escape a value for use inside a Typst string literal
+ */
+function escapeTypstString(value: string): string {
+  return value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+}
+
+/**
+ * Create a new Typst book project with scaffolding
  */
 export async function createNewProject(title: string): Promise<void> {
   const projectName = titleToDirectoryName(title);
   const projectPath = join(process.cwd(), projectName);
 
-  console.log(`Creating new LaTeX book project: ${title}`);
+  console.log(`Creating new Typst book project: ${title}`);
   console.log(`Project directory: ${projectName}`);
 
   try {
@@ -77,38 +85,55 @@ export async function createNewProject(title: string): Promise<void> {
       await mkdir(join(projectPath, dir), { recursive: true });
     }
 
-    // Create main.tex file
-    const mainTexContent = await processTemplate('main.tex', {
-      BOOK_TITLE: title,
+    // Create main.typ file
+    const mainTypContent = await processTemplate('main.typ', {
+      BOOK_TITLE: escapeTypstString(title),
+      BOOK_AUTHOR: escapeTypstString(DEFAULT_AUTHOR),
     });
-    await writeFile(join(projectPath, 'main.tex'), mainTexContent);
+    await writeFile(join(projectPath, 'main.typ'), mainTypContent);
 
     // Create sample chapter
     await copyTemplate(
-      'chapter01.tex',
-      join(projectPath, 'chapters', 'chapter01.tex'),
+      'chapter01.typ',
+      join(projectPath, 'chapters', 'chapter01.typ'),
     );
 
     // Create book.toml configuration
     const bookTomlContent = await processTemplate('book.toml', {
       BOOK_TITLE: title,
+      BOOK_AUTHOR: DEFAULT_AUTHOR,
     });
     await writeFile(join(projectPath, 'book.toml'), bookTomlContent);
 
-    // Create .gitignore for LaTeX projects
+    // Create .gitignore for Typst projects
     await copyTemplate('.gitignore', join(projectPath, '.gitignore'));
 
-    // Create GitHub Actions workflow for PDF builds
-    await copyTemplate(
-      'build.yml',
+    // Create GitHub Actions workflow for PDF builds and previews
+    const buildWorkflowContent = await processTemplate('build.yml', {
+      BOOK_DIRECTORY: projectName,
+    });
+    await writeFile(
       join(projectPath, '.github', 'workflows', 'build.yml'),
+      buildWorkflowContent,
+    );
+
+    const copilotInstructionsContent = await processTemplate(
+      'copilot-instructions.md',
+      {
+        BOOK_TITLE: title,
+        BOOK_AUTHOR: DEFAULT_AUTHOR,
+      },
+    );
+    await writeFile(
+      join(projectPath, '.github', 'copilot-instructions.md'),
+      copilotInstructionsContent,
     );
 
     console.log(`✓ Created project directory structure in ${projectName}/`);
     console.log('');
     console.log('Next steps:');
     console.log(`  cd ${projectName}`);
-    console.log('  # Edit main.tex to start writing your book');
+    console.log('  # Edit main.typ to start writing your book');
     console.log('  # Add chapters in the chapters/ directory');
     console.log('  # Commit your work to git when ready');
   } catch (error) {
