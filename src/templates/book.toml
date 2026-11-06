@@ -3,10 +3,9 @@ title = "{{BOOK_TITLE}}"
 author = "{{BOOK_AUTHOR}}"
 language = "en"
 
-[latex]
-document_class = "book"
+[typst]
 font_size = "12pt"
-paper_size = "letterpaper"
+paper_size = "us-letter"
 margin = "1in"
 
 [build]

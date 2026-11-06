@@ -2,9 +2,9 @@
 
 ## Project overview
 
-This repository contains the LaTeX source for _{{BOOK_TITLE}}_, a book being written by {{BOOK_AUTHOR}}.
+This repository contains the Typst source for _{{BOOK_TITLE}}_, a book being written by {{BOOK_AUTHOR}}.
 
-The content of the book is written by the author. Copilot's role in this repository is solely technical: maintaining and improving the LaTeX code, document structure, build system, and supporting tooling.
+The content of the book is written by the author. Copilot's role in this repository is solely technical: maintaining and improving the Typst code, document structure, build system, and supporting tooling.
 
 ## Important: preserve the author's writing
 
@@ -22,33 +22,33 @@ This includes apparent:
 
 These may be deliberate choices. You may provide feedback on spelling or grammar, but do not make alterations.
 
-When a task concerns layout or typesetting, change the LaTeX markup rather than the text wherever possible.
+When a task concerns layout or typesetting, change the Typst markup rather than the text wherever possible.
 
-## LaTeX
+## Typst
 
-The project is built using `latexmk`.
+The project is built using the `typst` CLI.
 
 Before completing a change, build the project and verify that the
 document compiles successfully.
 
 Use:
 
-    latexmk -pdf main.tex
+    typst compile main.typ
 
 unless the repository's existing configuration specifies a different build command.
 
-Follow the existing LaTeX structure and conventions rather than introducing new packages or abstractions unnecessarily.
+Follow the existing Typst structure and conventions rather than introducing new packages or abstractions unnecessarily.
 
 Prefer:
 
-- simple, idiomatic LaTeX
-- semantic commands over repeated formatting markup
-- reusable commands/environments when formatting is genuinely shared
+- simple, idiomatic Typst
+- set and show rules over repeated formatting markup
+- reusable functions when formatting is genuinely shared
 - small changes appropriate to the issue being addressed
 
 Avoid:
 
-- unnecessary dependencies
+- unnecessary packages and dependencies
 - large-scale restructuring unrelated to the issue
 - generated PDF/build artifacts in Git unless the repository already intentionally tracks them
 
@@ -58,15 +58,15 @@ Copilot may autonomously make technical changes such as:
 
 - document layout and typography
 - page and section formatting
-- poem-specific LaTeX environments and commands
+- poem-specific Typst functions and show rules
 - table of contents behaviour
 - headers and footers
 - title/front-matter formatting
 - page breaks and spacing
 - build configuration
 - `.gitignore`
-- LaTeX warnings and errors
-- refactoring repeated LaTeX markup
+- Typst warnings and errors
+- refactoring repeated Typst markup
 - scripts or tooling supporting the document build
 
 If a technical task would require changing the actual words of the book, preserve the text and explain the limitation instead.
@@ -81,7 +81,7 @@ Inspect the existing implementation before deciding how to solve the problem. Pr
 
 After making changes:
 
-1. Build the complete document with `latexmk`.
+1. Build the complete document with `typst compile main.typ`.
 2. Check the build output for relevant errors or warnings.
 3. Confirm that the requested behaviour has been implemented.
 4. Summarise the technical changes made and any significant design decisions.

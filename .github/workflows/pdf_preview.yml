@@ -32,11 +32,12 @@ jobs:
       - name: Generate sample book project
         run: npm run write new "Fairy Dust Sprinkling Made Easy"
 
+      - name: Setup Typst
+        uses: typst-community/setup-typst@v4
+
       - name: Build PDF
-        uses: xu-cheng/latex-action@v4
-        with:
-          working_directory: fairy-dust-sprinkling-made-easy
-          root_file: main.tex
+        run: typst compile main.typ main.pdf
+        working-directory: fairy-dust-sprinkling-made-easy
 
       - name: Rename PDF with commit SHA
         run: >
