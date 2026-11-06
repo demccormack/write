@@ -1,4 +1,4 @@
-name: Build LaTeX PDF
+name: Build Typst PDF
 
 on:
   push:
@@ -17,10 +17,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
 
-      - name: Setup LaTeX
-        uses: xu-cheng/latex-action@v4
-        with:
-          root_file: main.tex
+      - name: Setup Typst
+        uses: typst-community/setup-typst@v4
+
+      - name: Build PDF
+        run: typst compile main.typ main.pdf
 
       - name: Rename PDF with commit SHA
         run: mv main.pdf {{BOOK_DIRECTORY}}-${{ github.sha }}.pdf

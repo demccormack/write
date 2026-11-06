@@ -1,6 +1,6 @@
 # Copilot Instructions for `write`
 
-`write` is a CLI scaffolding tool (npm package `@demccormack/write`) that generates LaTeX book
+`write` is a CLI scaffolding tool (npm package `@demccormack/write`) that generates Typst book
 projects with Git/GitHub CI/CD scaffolding. It is **not** a writing/editing interface itself —
 it only generates project structure, templates, and CI config for the books it creates.
 
@@ -15,7 +15,7 @@ it only generates project structure, templates, and CI config for the books it c
 - Format: `npm run format` / check only: `npm run format:check`
 - Full test suite: `npm test` (Node's built-in test runner via `node --test test/**/*.test.ts`)
 - **Run a single test file**: `node --test test/new.test.ts`
-- **Run a single test by name**: `node --test --test-name-pattern="should substitute title in main.tex" test/new.test.ts`
+- **Run a single test by name**: `node --test --test-name-pattern="should substitute title in main.typ" test/new.test.ts`
 - Watch mode for tests: `npm run test:watch`
 - CI (`.github/workflows/ci.yml`) runs, in order: typecheck → format:check → lint → build → test.
   Match this sequence locally before pushing.
@@ -28,9 +28,9 @@ it only generates project structure, templates, and CI config for the books it c
   `src/commands/`.
 - `src/commands/new.ts` implements `write new <title>`: it converts the title to a slug
   (`titleToDirectoryName`), creates the project directory tree, and renders/copies files from
-  `src/templates/` into the new project. Templates with placeholders (`main.tex`, `book.toml`)
+  `src/templates/` into the new project. Templates with placeholders (`main.typ`, `book.toml`)
   go through `processTemplate`, which does simple `{{PLACEHOLDER}}` string substitution; static
-  files (`chapter01.tex`, `.gitignore`, `build.yml`) are copied verbatim via `copyTemplate`.
+  files (`chapter01.typ`, `.gitignore`, `build.yml`) are copied verbatim via `copyTemplate`.
 - `src/commands/version.ts` reads `version`/`displayName` directly from the repo's own
   `package.json` at runtime (not a generated file) — this is the single source of truth for the
   CLI's reported version/name.

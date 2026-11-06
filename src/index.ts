@@ -15,7 +15,7 @@ if (args.includes('-h') || args.includes('--help') || args.length === 0) {
   console.log(`${displayName} ${version}`);
   console.log('');
   console.log('Usage:');
-  console.log('  write new <title>     Create a new LaTeX book project');
+  console.log('  write new <title>     Create a new Typst book project');
   console.log('  write --version       Show version');
   console.log('  write --help          Show this help');
   process.exit(0);

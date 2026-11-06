@@ -169,7 +169,7 @@ describe('write new command', () => {
     assert.strictEqual(result.stderr.trim(), '');
     assert(
       result.stdout.includes(
-        `Creating new LaTeX book project: ${projectTitle}`,
+        `Creating new Typst book project: ${projectTitle}`,
       ),
     );
     assert(result.stdout.includes(`Project directory: ${expectedProjectName}`));
@@ -186,48 +186,42 @@ describe('write new command', () => {
     await updateReadmeWithStructure(treeOutput, projectTitle);
   });
 
-  test('should substitute title in main.tex', async () => {
+  test('should substitute title in main.typ', async () => {
     const projectTitle = 'Title Substitution Test';
     const projectName = 'title-substitution-test';
     const projectPath = join(TEST_PATH, projectName);
 
     await runCreateNewProject(projectTitle, TEST_PATH);
 
-    const mainTexPath = join(projectPath, 'main.tex');
-    const content = await readFile(mainTexPath, 'utf8');
+    const content = await readFile(join(projectPath, 'main.typ'), 'utf8');
 
-    // Check title is correctly substituted
     assert(
-      content.includes(`\\title{${projectTitle}}`),
-      'Title should be substituted in main.tex',
+      content.includes(`#let book-title = "${projectTitle}"`),
+      'Title should be substituted in main.typ',
     );
     assert(
-      content.includes('© \\bookauthor, \\the\\year\\par'),
-      'Generated main.tex should include a copyright notice with the current year',
+      content.includes('© #book-author, #datetime.today().year()'),
+      'Generated main.typ should include a copyright notice with the current year',
     );
     assert(
-      content.includes('\\begingroup'),
-      'Generated main.tex should scope the copyright page formatting',
+      content.includes('#set text(size: 6pt)'),
+      'Generated main.typ should make the copyright page text smaller',
     );
     assert(
-      content.includes('\\tiny'),
-      'Generated main.tex should make the copyright page text smaller',
-    );
-    assert(
-      content.includes('\\centering'),
-      'Generated main.tex should center the copyright page text',
+      content.includes('#align(center + bottom)'),
+      'Generated main.typ should center the copyright page text',
     );
     assert(
       content.includes(
         'This book began with Write, the free and open-source book creation tool.',
       ),
-      'Generated main.tex should acknowledge Write on the copyright page',
+      'Generated main.typ should acknowledge Write on the copyright page',
     );
     assert(
       content.includes(
-        '\\href{https://write.art/open-source}{write.art/open-source}',
+        '#link("https://write.art/open-source")[write.art/open-source]',
       ),
-      'Generated main.tex should include a clickable Write URL',
+      'Generated main.typ should include a clickable Write URL',
     );
   });
 
@@ -267,7 +261,7 @@ describe('write new command', () => {
     );
     const buildWorkflowContent = await readFile(buildWorkflowPath, 'utf8');
     assert(
-      buildWorkflowContent.includes('name: Build LaTeX PDF'),
+      buildWorkflowContent.includes('name: Build Typst PDF'),
       'Generated project should include the build workflow',
     );
     assert(
@@ -296,7 +290,7 @@ describe('write new command', () => {
     );
     assert(
       copilotInstructionsContent.includes(
-        `This repository contains the LaTeX source for _${projectTitle}_,`,
+        `This repository contains the Typst source for _${projectTitle}_,`,
       ),
       'Copilot instructions should include the generated book title',
     );
@@ -305,7 +299,7 @@ describe('write new command', () => {
       'Copilot instructions should include the generated author',
     );
     assert(
-      copilotInstructionsContent.includes('latexmk -pdf main.tex'),
+      copilotInstructionsContent.includes('typst compile main.typ'),
       'Copilot instructions should include the build command guidance',
     );
   });
@@ -322,9 +316,15 @@ describe('write new command', () => {
     assert(await isDirectory(projectPath), 'Project directory should exist');
 
     // Check that the original title is preserved in files
-    const mainTexPath = join(projectPath, 'main.tex');
-    const mainTexContent = await readFile(mainTexPath, 'utf8');
-    assert(mainTexContent.includes(`\\title{${projectTitle}}`));
+    const mainTypContent = await readFile(
+      join(projectPath, 'main.typ'),
+      'utf8',
+    );
+    assert(
+      mainTypContent.includes(
+        `#let book-title = "My \\"Amazing\\" Book & More!!!"`,
+      ),
+    );
 
     const configPath = join(projectPath, 'book.toml');
     const configContent = await readFile(configPath, 'utf8');
