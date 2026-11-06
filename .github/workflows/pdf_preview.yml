@@ -33,7 +33,7 @@ jobs:
         run: npm run write new "Fairy Dust Sprinkling Made Easy"
 
       - name: Setup Typst
-        uses: typst-community/setup-typst@v4
+        uses: typst-community/setup-typst@v5
 
       - name: Build PDF
         run: typst compile main.typ main.pdf
