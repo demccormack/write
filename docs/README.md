@@ -64,13 +64,13 @@ my-amazing-book
 
 > ⚠️ **Note**: This tool is in early development. The following features are planned:
 
-- [ ] Project scaffolding with conventional directory structure
+- [x] Project scaffolding with conventional directory structure
 - [ ] GitHub repository creation and setup
 - [ ] Typst template library (academic, fiction, technical)
-- [ ] GitHub Actions CI/CD pipeline configuration
-- [ ] Automated PDF builds on commit/PR
+- [x] GitHub Actions CI/CD pipeline configuration
+- [x] Automated PDF builds on commit/PR
 - [ ] Multiple output formats (PDF, EPUB, HTML)
-- [ ] Book configuration management (`book.toml`)
+- [x] Book configuration management (`book.toml`)
 - [ ] Chapter management commands
 - [ ] Asset organization helpers
 - [ ] **Author monetization support**:
