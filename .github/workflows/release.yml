@@ -43,6 +43,16 @@ jobs:
         id: version
         run: echo "version=${GITHUB_REF#refs/tags/v}" | tee -a $GITHUB_OUTPUT
 
+      - name: Verify package.json version matches tag
+        env:
+          TAG_VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          if [ "$PKG_VERSION" != "$TAG_VERSION" ]; then
+            echo "::error::package.json version ($PKG_VERSION) does not match tag version ($TAG_VERSION)"
+            exit 1
+          fi
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v3
         with:
