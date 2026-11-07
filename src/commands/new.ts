@@ -1,6 +1,7 @@
 import { mkdir, writeFile, readFile, copyFile } from 'fs/promises';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { version } from './version.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -102,6 +103,7 @@ export async function createNewProject(title: string): Promise<void> {
     const bookTomlContent = await processTemplate('book.toml', {
       BOOK_TITLE: title,
       BOOK_AUTHOR: DEFAULT_AUTHOR,
+      WRITE_VERSION: version,
     });
     await writeFile(join(projectPath, 'book.toml'), bookTomlContent);
 
