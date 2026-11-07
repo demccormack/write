@@ -19,6 +19,12 @@ it only generates project structure, templates, and CI config for the books it c
 - Watch mode for tests: `npm run test:watch`
 - CI (`.github/workflows/ci.yml`) runs, in order: typecheck → format:check → lint → build → test.
   Match this sequence locally before pushing.
+- CI also has a `typst` job: `typstyle --check src/templates`, then it generates a sample book and
+  runs `typstyle --check .` and `tinymist lint main.typ` on it. After changing anything under
+  `src/templates/`, run `typstyle -i src/templates` (Typst files) and lint a freshly generated
+  book with `tinymist lint main.typ`. Generated projects get their own `lint.yml`, `.vscode/`
+  settings and extension recommendations from `src/templates/lint.yml`, `vscode-settings.json`
+  and `vscode-extensions.json`.
 
 ## Architecture
 

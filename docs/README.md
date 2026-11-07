@@ -37,8 +37,12 @@ my-amazing-book
 ├── .github
 │   ├── copilot-instructions.md
 │   └── workflows
-│       └── build.yml
+│       ├── build.yml
+│       └── lint.yml
 ├── .gitignore
+├── .vscode
+│   ├── extensions.json
+│   └── settings.json
 ├── assets
 │   ├── figures
 │   └── images
@@ -48,7 +52,7 @@ my-amazing-book
 ├── main.typ
 └── templates
 
-8 directories, 6 files
+9 directories, 9 files
 ```
 
 <!-- END AUTO-GENERATED STRUCTURE -->
@@ -56,9 +60,10 @@ my-amazing-book
 ### What You Do Next
 
 1. **Edit in your preferred Typst editor** (VS Code with Tinymist, the Typst web app, etc.)
-2. **Commit changes to Git** - every idea, immortalized in your git log
-3. **Collaborate via pull requests** - built-in review process
-4. **Download PDFs from GitHub Actions** - share early previews with interested parties
+2. **Format and lint automatically** - generated projects include VS Code settings (format on save with Tinymist) and a CI check that fails on unformatted or lint-failing Typst
+3. **Commit changes to Git** - every idea, immortalized in your git log
+4. **Collaborate via pull requests** - built-in review process
+5. **Download PDFs from GitHub Actions** - share early previews with interested parties
 
 ## Roadmap Features
 

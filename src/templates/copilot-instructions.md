@@ -81,9 +81,11 @@ Inspect the existing implementation before deciding how to solve the problem. Pr
 
 After making changes:
 
-1. Build the complete document with `typst compile main.typ`.
-2. Check the build output for relevant errors or warnings.
-3. Confirm that the requested behaviour has been implemented.
-4. Summarise the technical changes made and any significant design decisions.
+1. Format the project with `typstyle -i .`.
+2. Lint with `tinymist lint main.typ` and fix any errors it reports.
+3. Build the complete document with `typst compile main.typ`.
+4. Check the build output for relevant errors or warnings.
+5. Confirm that the requested behaviour has been implemented.
+6. Summarise the technical changes made and any significant design decisions.
 
 When visual appearance is relevant, make conservative changes unless the issue provides explicit design requirements.
