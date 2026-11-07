@@ -18,4 +18,4 @@ templates_dir = "templates"
 description = "A book created with the write tool"
 keywords = []
 subject = ""
-creator = "write v0.0.1"
+creator = "write v{{WRITE_VERSION}}"
