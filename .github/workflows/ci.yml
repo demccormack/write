@@ -36,3 +36,51 @@ jobs:
 
       - name: Run tests
         run: npm run test
+
+  typst:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run build
+
+      - name: Install Tinymist and Typstyle
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TINYMIST_VERSION: v0.15.12
+          TYPSTYLE_VERSION: v0.15.2
+        run: |
+          mkdir -p "$HOME/.local/bin"
+          gh release download "$TINYMIST_VERSION" -R Myriad-Dreamin/tinymist \
+            -p tinymist-linux-x64 -O "$HOME/.local/bin/tinymist"
+          gh release download "$TYPSTYLE_VERSION" -R typstyle-rs/typstyle \
+            -p typstyle-x86_64-unknown-linux-gnu -O "$HOME/.local/bin/typstyle"
+          chmod +x "$HOME/.local/bin/tinymist" "$HOME/.local/bin/typstyle"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Check Typst template formatting
+        run: typstyle --check src/templates
+
+      - name: Generate a sample book
+        run: node dist/index.js new "CI Sample Book"
+        working-directory: ${{ runner.temp }}
+
+      - name: Check generated book formatting
+        run: typstyle --check .
+        working-directory: ${{ runner.temp }}/ci-sample-book
+
+      - name: Lint generated book
+        run: tinymist lint main.typ
+        working-directory: ${{ runner.temp }}/ci-sample-book

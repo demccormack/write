@@ -26,6 +26,13 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true
   },
+  "[typst]": {
+    "editor.defaultFormatter": "myriad-dreamin.tinymist",
+    "editor.formatOnSave": true
+  },
+  "tinymist.formatterMode": "typstyle",
+  "tinymist.lint.enabled": true,
+  "files.autoSave": "onFocusChange",
   "yaml.format.enable": false,
   "[github-actions-workflow]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"

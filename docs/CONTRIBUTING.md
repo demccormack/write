@@ -48,6 +48,10 @@ This project uses:
 - **ESLint** for code linting
 - **Prettier** for code formatting
 - **TypeScript** for type checking
+- **[Typstyle](https://typstyle-rs.github.io/typstyle/)** and **[Tinymist](https://myriad-dreamin.github.io/tinymist/)** for formatting and linting the Typst templates in `src/templates/` (and the books they generate)
+
+In VS Code, install the recommended Tinymist extension and the workspace settings will lint and format Typst files on save. To run the checks from the command line, install `typstyle` and `tinymist` (for example with Homebrew) and run `typstyle --check src/templates`. CI also generates a sample book and checks that it is formatted and lints cleanly.
+
 - **Node.js built-in test runner** for testing
 
 ## Contributing Guidelines

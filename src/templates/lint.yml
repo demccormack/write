@@ -1,0 +1,40 @@
+name: Lint and format Typst
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+env:
+  TINYMIST_VERSION: v0.15.12
+  TYPSTYLE_VERSION: v0.15.2
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Setup Typst
+        uses: typst-community/setup-typst@v5
+
+      - name: Install Tinymist and Typstyle
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p "$HOME/.local/bin"
+          gh release download "$TINYMIST_VERSION" -R Myriad-Dreamin/tinymist \
+            -p tinymist-linux-x64 -O "$HOME/.local/bin/tinymist"
+          gh release download "$TYPSTYLE_VERSION" -R typstyle-rs/typstyle \
+            -p typstyle-x86_64-unknown-linux-gnu -O "$HOME/.local/bin/typstyle"
+          chmod +x "$HOME/.local/bin/tinymist" "$HOME/.local/bin/typstyle"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Check formatting
+        run: typstyle --check .
+
+      - name: Lint
+        run: tinymist lint main.typ

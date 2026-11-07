@@ -1,3 +1,3 @@
 exports[`write new command > should create project with correct structure (snapshot) 1`] = `
-"my-amazing-book\\n├── .github\\n│   ├── copilot-instructions.md\\n│   └── workflows\\n│       └── build.yml\\n├── .gitignore\\n├── assets\\n│   ├── figures\\n│   └── images\\n├── book.toml\\n├── chapters\\n│   └── chapter01.typ\\n├── main.typ\\n└── templates\\n\\n8 directories, 6 files"
+"my-amazing-book\\n├── .github\\n│   ├── copilot-instructions.md\\n│   └── workflows\\n│       ├── build.yml\\n│       └── lint.yml\\n├── .gitignore\\n├── .vscode\\n│   ├── extensions.json\\n│   └── settings.json\\n├── assets\\n│   ├── figures\\n│   └── images\\n├── book.toml\\n├── chapters\\n│   └── chapter01.typ\\n├── main.typ\\n└── templates\\n\\n9 directories, 9 files"
 `;

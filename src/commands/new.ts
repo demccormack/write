@@ -80,6 +80,7 @@ export async function createNewProject(title: string): Promise<void> {
       'templates',
       '.github',
       '.github/workflows',
+      '.vscode',
     ];
 
     for (const dir of directories) {
@@ -117,6 +118,22 @@ export async function createNewProject(title: string): Promise<void> {
     await writeFile(
       join(projectPath, '.github', 'workflows', 'build.yml'),
       buildWorkflowContent,
+    );
+
+    // Create GitHub Actions workflow that checks Typst linting and formatting
+    await copyTemplate(
+      'lint.yml',
+      join(projectPath, '.github', 'workflows', 'lint.yml'),
+    );
+
+    // Create VS Code settings for autosave and format-on-save
+    await copyTemplate(
+      'vscode-settings.json',
+      join(projectPath, '.vscode', 'settings.json'),
+    );
+    await copyTemplate(
+      'vscode-extensions.json',
+      join(projectPath, '.vscode', 'extensions.json'),
     );
 
     const copilotInstructionsContent = await processTemplate(
