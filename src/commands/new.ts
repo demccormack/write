@@ -62,7 +62,10 @@ function escapeTypstString(value: string): string {
 /**
  * Create a new Typst book project with scaffolding
  */
-export async function createNewProject(title: string): Promise<void> {
+export async function createNewProject(
+  title: string,
+  { git = true }: { git?: boolean } = {},
+): Promise<void> {
   const projectName = titleToDirectoryName(title);
   const projectPath = join(process.cwd(), projectName);
 
@@ -152,18 +155,20 @@ export async function createNewProject(title: string): Promise<void> {
 
     console.log(`✓ Created project directory structure in ${projectName}/`);
 
-    try {
-      await setupGitRepo(exec, projectPath);
-      console.log('✓ Initialised Git repository with an initial commit');
-    } catch (error) {
-      if (!(error instanceof GitSetupError)) throw error;
-      console.error('');
-      console.error(`Your project was created, but Git setup failed:`);
-      console.error(error.message);
-      console.error('');
-      console.error('Once fixed, finish setting up with:');
-      console.error(`  cd ${projectName} && write setup`);
-      process.exit(1);
+    if (git) {
+      try {
+        await setupGitRepo(exec, projectPath);
+        console.log('✓ Initialised Git repository with an initial commit');
+      } catch (error) {
+        if (!(error instanceof GitSetupError)) throw error;
+        console.error('');
+        console.error(`Your project was created, but Git setup failed:`);
+        console.error(error.message);
+        console.error('');
+        console.error('Once fixed, finish setting up with:');
+        console.error(`  cd ${projectName} && write setup`);
+        process.exit(1);
+      }
     }
 
     console.log('');
@@ -171,7 +176,11 @@ export async function createNewProject(title: string): Promise<void> {
     console.log(`  cd ${projectName}`);
     console.log('  # Edit main.typ to start writing your book');
     console.log('  # Add chapters in the chapters/ directory');
-    console.log('  # Optional: write remote add github');
+    console.log(
+      git
+        ? '  # Optional: write remote add github'
+        : '  # Run "write setup" when you want Git version history',
+    );
   } catch (error) {
     console.error(`Error creating project: ${error}`);
     process.exit(1);

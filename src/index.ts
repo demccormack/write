@@ -18,6 +18,9 @@ if (args.includes('-h') || args.includes('--help') || args.length === 0) {
   console.log('');
   console.log('Usage:');
   console.log('  write new <title>     Create a new Typst book project');
+  console.log(
+    '                        (--no-git skips creating a Git repository)',
+  );
   console.log('  write remote add github [--name <n>] [--owner <o>]');
   console.log(
     '                        [--public|--private] [--description <d>] [-y]',
@@ -38,13 +41,14 @@ const [command, ...commandArgs] = args;
 
 switch (command) {
   case 'new': {
-    if (commandArgs.length === 0) {
+    const git = !commandArgs.includes('--no-git');
+    const titleWords = commandArgs.filter((a) => a !== '--no-git');
+    if (titleWords.length === 0) {
       console.error('Error: Please provide a book title');
-      console.log('Usage: write new <title>');
+      console.log('Usage: write new <title> [--no-git]');
       process.exit(1);
     }
-    const title = commandArgs.join(' ');
-    await createNewProject(title);
+    await createNewProject(titleWords.join(' '), { git });
     break;
   }
 

@@ -189,6 +189,22 @@ describe('write new command', () => {
     await updateReadmeWithStructure(treeOutput, projectTitle);
   });
 
+  test('should initialise git by default and skip it with --no-git', async () => {
+    const gitDir = (name: string) => join(TEST_PATH, name, '.git');
+    await runCreateNewProject('With Git', TEST_PATH);
+    assert(await isDirectory(gitDir('with-git')));
+
+    const originalCwd = process.cwd();
+    process.chdir(TEST_PATH);
+    try {
+      await createNewProject('Without Git', { git: false });
+    } finally {
+      process.chdir(originalCwd);
+    }
+    assert(await isDirectory(join(TEST_PATH, 'without-git')));
+    assert(!(await isDirectory(gitDir('without-git'))));
+  });
+
   test('should substitute title in main.typ', async () => {
     const projectTitle = 'Title Substitution Test';
     const projectName = 'title-substitution-test';

@@ -74,7 +74,7 @@ jobs:
         run: typstyle --check src/templates
 
       - name: Generate a sample book
-        run: node "$GITHUB_WORKSPACE/dist/index.js" new "CI Sample Book"
+        run: node "$GITHUB_WORKSPACE/dist/index.js" new "CI Sample Book" --no-git
         working-directory: ${{ runner.temp }}
 
       - name: Check generated book formatting
