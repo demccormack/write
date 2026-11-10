@@ -13,7 +13,7 @@ import {
   login,
   repoExists,
 } from '../github/gh.ts';
-import { GitSetupError, isOwnRepo, setupGitRepo } from '../git.ts';
+import { isOwnRepo } from '../git.ts';
 
 export interface Prompter {
   ask(question: string, defaultValue?: string): Promise<string>;
@@ -132,11 +132,15 @@ export async function remoteAddGithub(
     }
     log('✓ Valid write project detected');
 
-    const isRepo = await isOwnRepo(run, cwd);
-    let originUrl = '';
-    if (isRepo) {
-      originUrl = (await git('remote', 'get-url', 'origin')).stdout.trim();
+    if (
+      !(await isOwnRepo(run, cwd)) ||
+      (await git('rev-parse', '--verify', 'HEAD')).code !== 0
+    ) {
+      throw new FatalError(
+        'This project has no Git repository with an initial commit yet. Run "write setup" first, then re-run this command.',
+      );
     }
+    const originUrl = (await git('remote', 'get-url', 'origin')).stdout.trim();
     const existingRepo = originUrl ? parseGithubRemote(originUrl) : undefined;
     if (originUrl && !existingRepo) {
       throw new FatalError(
@@ -243,19 +247,7 @@ export async function remoteAddGithub(
     }
     resume = `Fix the problem and re-run "write remote add github" to resume; completed steps are skipped.`;
 
-    // Local git state
-    let committed: boolean;
-    try {
-      ({ committed } = await setupGitRepo(run, cwd));
-    } catch (error) {
-      if (error instanceof GitSetupError) throw new FatalError(error.message);
-      throw error;
-    }
-    if (committed) {
-      log(
-        '✓ Created initial commit (files matching .env/key patterns excluded)',
-      );
-    } else if ((await git('status', '--porcelain')).stdout.trim()) {
+    if ((await git('status', '--porcelain')).stdout.trim()) {
       warnings.push(
         'You have uncommitted changes. Only committed history is pushed; commit them and run "git push" to include them.',
       );

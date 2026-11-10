@@ -9,6 +9,7 @@ import {
   parseGithubRemote,
   remoteAddGithub,
 } from '../src/commands/remote.ts';
+import { setupGitRepo } from '../src/git.ts';
 import { exec, type Exec, type ExecResult } from '../src/github/gh.ts';
 
 const ok = (stdout = ''): ExecResult => ({ code: 0, stdout, stderr: '' });
@@ -70,6 +71,7 @@ describe('remote add github', () => {
       join(dir, '.github', 'workflows', 'build.yml'),
       'name: Build\njobs:\n  build:\n    runs-on: x\n    steps:\n      - run: echo ${{ secrets.GITHUB_TOKEN }}\n  other:\n    name: Other check\n    runs-on: x\n',
     );
+    await setupGitRepo(exec, dir);
   });
   afterEach(() => rm(dir, { recursive: true, force: true }));
 
@@ -96,7 +98,6 @@ describe('remote add github', () => {
   });
 
   test('skips creation when origin already points to an existing repo', async () => {
-    await exec('git', ['init', '-b', 'main'], { cwd: dir });
     await exec(
       'git',
       ['remote', 'add', 'origin', 'git@github.com:octo/book.git'],
@@ -110,7 +111,6 @@ describe('remote add github', () => {
   });
 
   test('refuses a non-GitHub origin', async () => {
-    await exec('git', ['init'], { cwd: dir });
     await exec(
       'git',
       ['remote', 'add', 'origin', 'https://example.com/x.git'],
@@ -129,6 +129,15 @@ describe('remote add github', () => {
     f = fake((a) => (a[0] === 'auth' ? fail() : undefined));
     assert.strictEqual(await run(f), 1);
     assert.ok(logs.some((l) => l.includes('gh auth login')));
+  });
+
+  test('does not initialise or commit; asks the user to run setup', async () => {
+    await rm(join(dir, '.git'), { recursive: true });
+    const f = fake(happyGh);
+    assert.strictEqual(await run(f), 1);
+    assert.ok(logs.some((l) => l.includes('write setup')));
+    assert.ok(!f.calls.some((c) => /^git (init|commit|add)/.test(c)));
+    assert.ok(!f.calls.some((c) => c.startsWith('gh ')));
   });
 
   test('rejects a directory that is not a book project', async () => {
