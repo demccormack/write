@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { displayName, version } from './commands/version.js';
 import { createNewProject } from './commands/new.js';
+import { runRemoteAdd } from './commands/remote.js';
 
 const args = process.argv.slice(2);
 
@@ -16,6 +17,13 @@ if (args.includes('-h') || args.includes('--help') || args.length === 0) {
   console.log('');
   console.log('Usage:');
   console.log('  write new <title>     Create a new Typst book project');
+  console.log('  write remote add github [--name <n>] [--owner <o>]');
+  console.log(
+    '                        [--public|--private] [--description <d>] [-y]',
+  );
+  console.log(
+    '                        Create a GitHub repository for this project',
+  );
   console.log('  write --version       Show version');
   console.log('  write --help          Show this help');
   process.exit(0);
@@ -33,6 +41,21 @@ switch (command) {
     }
     const title = commandArgs.join(' ');
     await createNewProject(title);
+    break;
+  }
+
+  case 'remote': {
+    const [action, provider, ...flags] = commandArgs;
+    if (action !== 'add' || (provider !== 'github' && provider !== 'gh')) {
+      console.error('Usage: write remote add <github|gh> [options]');
+      process.exit(1);
+    }
+    try {
+      process.exit(await runRemoteAdd(flags));
+    } catch (error) {
+      console.error(`Error: ${error instanceof Error ? error.message : error}`);
+      process.exit(1);
+    }
     break;
   }
 

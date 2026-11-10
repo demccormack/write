@@ -65,6 +65,16 @@ my-amazing-book
 4. **Collaborate via pull requests** - built-in review process
 5. **Download PDFs from GitHub Actions** - share early previews with interested parties
 
+### Put Your Book on GitHub
+
+From inside the project, with the [GitHub CLI](https://cli.github.com/) installed:
+
+```bash
+write remote add github   # or: write remote add gh
+```
+
+This creates the repository (private by default), pushes your history, enables automatic branch deletion and Actions, adds a ruleset requiring CI to pass (repository admins can bypass), and offers to set any secrets your workflows reference. It is safe to re-run. Flags: `--name`, `--owner`, `--public`/`--private`, `--description`, `-y` (accept defaults).
+
 ## Roadmap Features
 
 > ⚠️ **Note**: This tool is in early development. The following features are planned:
