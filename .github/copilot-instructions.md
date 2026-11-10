@@ -67,3 +67,11 @@ dist/`, see `package.json` `build` script) — it is NOT compiled by `tsc`. Any 
 - Docs live in `docs/` (`README.md`, `CONTRIBUTING.md`, `LICENSING.md`), not the repo root.
 - Licensed AGPL-3.0-or-later; contributions require agreeing to a CLA (see
   `docs/CONTRIBUTING.md`) — don't add code that would conflict with that licensing model.
+
+## Bumping the version
+
+1. Edit `version` in `package.json`.
+2. Run `npm install` (updates `package-lock.json`).
+3. Commit the changes.
+4. Create a tag beginning with `v` (e.g. `git tag v0.1.2`).
+5. Push the commit and the tag (`git push && git push origin v0.1.2`).
