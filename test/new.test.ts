@@ -103,10 +103,16 @@ function runTreeCommand(projectPath: string): Promise<string> {
     const projectName = projectPath.split('/').pop() || '';
     const parentDir = projectPath.substring(0, projectPath.lastIndexOf('/'));
 
-    const child = spawn('tree', ['-a', '-I', '.git', projectName], {
-      stdio: ['pipe', 'pipe', 'pipe'],
-      cwd: parentDir,
-    });
+    const child = spawn(
+      'tree',
+      ['-a', '-I', '.git', '--charset=utf-8', projectName],
+      {
+        stdio: ['pipe', 'pipe', 'pipe'],
+        cwd: parentDir,
+        // Keep snapshot ordering independent of the host locale.
+        env: { ...process.env, LC_ALL: 'C' },
+      },
+    );
 
     let stdout = '';
 
