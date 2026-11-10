@@ -103,7 +103,7 @@ function runTreeCommand(projectPath: string): Promise<string> {
     const projectName = projectPath.split('/').pop() || '';
     const parentDir = projectPath.substring(0, projectPath.lastIndexOf('/'));
 
-    const child = spawn('tree', ['-a', projectName], {
+    const child = spawn('tree', ['-a', '-I', '.git', projectName], {
       stdio: ['pipe', 'pipe', 'pipe'],
       cwd: parentDir,
     });
@@ -142,6 +142,9 @@ async function isDirectory(dirPath: string): Promise<boolean> {
 
 describe('write new command', () => {
   before(async () => {
+    process.env.GIT_AUTHOR_NAME = process.env.GIT_COMMITTER_NAME = 'Test';
+    process.env.GIT_AUTHOR_EMAIL = process.env.GIT_COMMITTER_EMAIL =
+      'test@example.com';
     // Ensure tmp directory exists and create test subdirectory
     await mkdir(TMP_DIR, { recursive: true });
     await mkdir(TEST_PATH, { recursive: true });

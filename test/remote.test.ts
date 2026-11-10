@@ -58,6 +58,9 @@ describe('remote add github', () => {
     );
 
   beforeEach(async () => {
+    process.env.GIT_AUTHOR_NAME = process.env.GIT_COMMITTER_NAME = 'Test';
+    process.env.GIT_AUTHOR_EMAIL = process.env.GIT_COMMITTER_EMAIL =
+      'test@example.com';
     dir = await mkdtemp(join(tmpdir(), 'write-remote-'));
     logs = [];
     await mkdir(join(dir, '.github', 'workflows'), { recursive: true });

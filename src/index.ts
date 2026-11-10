@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { displayName, version } from './commands/version.js';
 import { createNewProject } from './commands/new.js';
+import { runSetup } from './commands/setup.js';
 import { runRemoteAdd } from './commands/remote.js';
 
 const args = process.argv.slice(2);
@@ -24,6 +25,9 @@ if (args.includes('-h') || args.includes('--help') || args.length === 0) {
   console.log(
     '                        Create a GitHub repository for this project',
   );
+  console.log(
+    '  write setup           Finish or resume Git setup for a project',
+  );
   console.log('  write --version       Show version');
   console.log('  write --help          Show this help');
   process.exit(0);
@@ -43,6 +47,10 @@ switch (command) {
     await createNewProject(title);
     break;
   }
+
+  case 'setup':
+    process.exit(await runSetup());
+    break;
 
   case 'remote': {
     const [action, provider, ...flags] = commandArgs;

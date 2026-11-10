@@ -2,6 +2,8 @@ import { mkdir, writeFile, readFile, copyFile } from 'fs/promises';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { version } from './version.ts';
+import { GitSetupError, setupGitRepo } from '../git.ts';
+import { exec } from '../github/gh.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -149,12 +151,27 @@ export async function createNewProject(title: string): Promise<void> {
     );
 
     console.log(`✓ Created project directory structure in ${projectName}/`);
+
+    try {
+      await setupGitRepo(exec, projectPath);
+      console.log('✓ Initialised Git repository with an initial commit');
+    } catch (error) {
+      if (!(error instanceof GitSetupError)) throw error;
+      console.error('');
+      console.error(`Your project was created, but Git setup failed:`);
+      console.error(error.message);
+      console.error('');
+      console.error('Once fixed, finish setting up with:');
+      console.error(`  cd ${projectName} && write setup`);
+      process.exit(1);
+    }
+
     console.log('');
     console.log('Next steps:');
     console.log(`  cd ${projectName}`);
     console.log('  # Edit main.typ to start writing your book');
     console.log('  # Add chapters in the chapters/ directory');
-    console.log('  # Commit your work to git when ready');
+    console.log('  # Optional: write remote add github');
   } catch (error) {
     console.error(`Error creating project: ${error}`);
     process.exit(1);

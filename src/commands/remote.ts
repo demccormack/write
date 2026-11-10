@@ -13,6 +13,7 @@ import {
   login,
   repoExists,
 } from '../github/gh.ts';
+import { GitSetupError, isOwnRepo, setupGitRepo } from '../git.ts';
 
 export interface Prompter {
   ask(question: string, defaultValue?: string): Promise<string>;
@@ -36,14 +37,6 @@ export interface RemoteDeps {
 }
 
 class FatalError extends Error {}
-
-const SENSITIVE_PATTERNS = [
-  ':(exclude,glob)**/.env',
-  ':(exclude,glob)**/.env.*',
-  ':(exclude,glob)**/*.pem',
-  ':(exclude,glob)**/*.key',
-  ':(exclude,glob)**/id_rsa*',
-];
 
 export function createPrompter(): Prompter {
   const rl = createInterface({ input: process.stdin, output: process.stdout });
@@ -139,7 +132,7 @@ export async function remoteAddGithub(
     }
     log('✓ Valid write project detected');
 
-    const isRepo = (await git('rev-parse', '--git-dir')).code === 0;
+    const isRepo = await isOwnRepo(run, cwd);
     let originUrl = '';
     if (isRepo) {
       originUrl = (await git('remote', 'get-url', 'origin')).stdout.trim();
@@ -251,19 +244,14 @@ export async function remoteAddGithub(
     resume = `Fix the problem and re-run "write remote add github" to resume; completed steps are skipped.`;
 
     // Local git state
-    if (!isRepo) {
-      const init = await git('init', '-b', 'main');
-      if (init.code !== 0)
-        throw new FatalError(`git init failed: ${init.stderr}`);
-      log('✓ Initialised Git repository');
+    let committed: boolean;
+    try {
+      ({ committed } = await setupGitRepo(run, cwd));
+    } catch (error) {
+      if (error instanceof GitSetupError) throw new FatalError(error.message);
+      throw error;
     }
-    const hasCommits = (await git('rev-parse', '--verify', 'HEAD')).code === 0;
-    if (!hasCommits) {
-      await git('add', '-A', '--', '.', ...SENSITIVE_PATTERNS);
-      const commit = await git('commit', '-m', 'Initial commit');
-      if (commit.code !== 0) {
-        throw new FatalError(`Initial commit failed: ${commit.stderr.trim()}`);
-      }
+    if (committed) {
       log(
         '✓ Created initial commit (files matching .env/key patterns excluded)',
       );
