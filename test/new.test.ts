@@ -103,7 +103,7 @@ function runTreeCommand(projectPath: string): Promise<string> {
     const projectName = projectPath.split('/').pop() || '';
     const parentDir = projectPath.substring(0, projectPath.lastIndexOf('/'));
 
-    const child = spawn('tree', ['-a', projectName], {
+    const child = spawn('tree', ['-a', '-I', '.git', projectName], {
       stdio: ['pipe', 'pipe', 'pipe'],
       cwd: parentDir,
     });
@@ -142,6 +142,9 @@ async function isDirectory(dirPath: string): Promise<boolean> {
 
 describe('write new command', () => {
   before(async () => {
+    process.env.GIT_AUTHOR_NAME = process.env.GIT_COMMITTER_NAME = 'Test';
+    process.env.GIT_AUTHOR_EMAIL = process.env.GIT_COMMITTER_EMAIL =
+      'test@example.com';
     // Ensure tmp directory exists and create test subdirectory
     await mkdir(TMP_DIR, { recursive: true });
     await mkdir(TEST_PATH, { recursive: true });
@@ -184,6 +187,22 @@ describe('write new command', () => {
     const treeOutput = await runTreeCommand(projectPath);
     t.assert.snapshot(treeOutput);
     await updateReadmeWithStructure(treeOutput, projectTitle);
+  });
+
+  test('should initialise git by default and skip it with --no-git', async () => {
+    const gitDir = (name: string) => join(TEST_PATH, name, '.git');
+    await runCreateNewProject('With Git', TEST_PATH);
+    assert(await isDirectory(gitDir('with-git')));
+
+    const originalCwd = process.cwd();
+    process.chdir(TEST_PATH);
+    try {
+      await createNewProject('Without Git', { git: false });
+    } finally {
+      process.chdir(originalCwd);
+    }
+    assert(await isDirectory(join(TEST_PATH, 'without-git')));
+    assert(!(await isDirectory(gitDir('without-git'))));
   });
 
   test('should substitute title in main.typ', async () => {

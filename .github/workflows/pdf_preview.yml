@@ -30,7 +30,7 @@ jobs:
         run: rm -rf fairy-dust-sprinkling-made-easy
 
       - name: Generate sample book project
-        run: npm run write new "Fairy Dust Sprinkling Made Easy"
+        run: npm run write -- new "Fairy Dust Sprinkling Made Easy" --no-git
 
       - name: Setup Typst
         uses: typst-community/setup-typst@v5
