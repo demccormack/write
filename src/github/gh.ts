@@ -99,32 +99,6 @@ export async function createRepo(
   ]);
 }
 
-export async function listSecrets(run: Exec, repo: string): Promise<string[]> {
-  const result = await run('gh', [
-    'secret',
-    'list',
-    '--repo',
-    repo,
-    '--json',
-    'name',
-    '--jq',
-    '.[].name',
-  ]);
-  return result.code === 0 ? result.stdout.split('\n').filter(Boolean) : [];
-}
-
-/** gh prompts for the value itself, so it never passes through this process. */
-export async function setSecret(
-  run: Exec,
-  repo: string,
-  name: string,
-): Promise<boolean> {
-  const result = await run('gh', ['secret', 'set', name, '--repo', repo], {
-    inherit: true,
-  });
-  return result.code === 0;
-}
-
 const RULESET_NAME = 'Require CI to pass';
 
 function failure(result: ExecResult): string {

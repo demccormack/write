@@ -73,14 +73,14 @@ From inside the project, with the [GitHub CLI](https://cli.github.com/) installe
 write remote add github   # or: write remote add gh
 ```
 
-This creates the repository (private by default), pushes your history, enables automatic branch deletion and Actions, adds a ruleset requiring CI to pass (repository admins can bypass), and offers to set any secrets your workflows reference. It is safe to re-run. Flags: `--name`, `--owner`, `--public`/`--private`, `--description`, `-y` (accept defaults).
+This creates the repository (private by default), pushes your history, enables automatic branch deletion and Actions, adds a ruleset requiring CI to pass (repository admins can bypass). It is safe to re-run. Flags: `--name`, `--owner`, `--public`/`--private`, `--description`, `-y` (accept defaults).
 
 ## Roadmap Features
 
 > ⚠️ **Note**: This tool is in early development. The following features are planned:
 
 - [x] Project scaffolding with conventional directory structure
-- [ ] GitHub repository creation and setup
+- [x] GitHub repository creation and setup
 - [ ] Typst template library (academic, fiction, technical)
 - [x] GitHub Actions CI/CD pipeline configuration
 - [x] Automated PDF builds on commit/PR

@@ -6,7 +6,6 @@ import { join } from 'path';
 import {
   defaultsPrompter,
   findCheckNames,
-  findWorkflowSecrets,
   parseGithubRemote,
   remoteAddGithub,
 } from '../src/commands/remote.ts';
@@ -43,7 +42,6 @@ const happyGh = (args: string[]) => {
   const cmd = args.slice(0, 2).join(' ');
   if (cmd === 'api user') return ok('octo\n');
   if (cmd === 'repo view') return fail('not found');
-  if (args[0] === 'secret') return ok('');
   if (args[1]?.endsWith('/rulesets') && args[0] === 'api' && args.length === 4)
     return ok('');
   return undefined;
@@ -67,7 +65,7 @@ describe('remote add github', () => {
     await writeFile(join(dir, '.env'), 'SECRET=1');
     await writeFile(
       join(dir, '.github', 'workflows', 'build.yml'),
-      'name: Build\njobs:\n  build:\n    runs-on: x\n    steps:\n      - run: echo ${{ secrets.GITHUB_TOKEN }} ${{ secrets.API_KEY }}\n  other:\n    name: Other check\n    runs-on: x\n',
+      'name: Build\njobs:\n  build:\n    runs-on: x\n    steps:\n      - run: echo ${{ secrets.GITHUB_TOKEN }}\n  other:\n    name: Other check\n    runs-on: x\n',
     );
   });
   afterEach(() => rm(dir, { recursive: true, force: true }));
@@ -92,11 +90,6 @@ describe('remote add github', () => {
     );
     const tracked = (await exec('git', ['ls-files'], { cwd: dir })).stdout;
     assert.ok(!tracked.includes('.env'));
-    assert.ok(
-      logs.some(
-        (l) => l.includes('Secret API_KEY is not set') || l.includes('API_KEY'),
-      ),
-    );
   });
 
   test('skips creation when origin already points to an existing repo', async () => {
@@ -156,11 +149,10 @@ describe('remote add github', () => {
     assert.ok(logs.some((l) => l.includes('not applied: 403 Upgrade')));
   });
 
-  test('helpers parse remotes, checks and secrets', async () => {
+  test('helpers parse remotes and checks', async () => {
     assert.strictEqual(parseGithubRemote('https://github.com/a/b.git'), 'a/b');
     assert.strictEqual(parseGithubRemote('git@github.com:a/b'), 'a/b');
     assert.strictEqual(parseGithubRemote('https://gitlab.com/a/b'), undefined);
     assert.deepStrictEqual(await findCheckNames(dir), ['build', 'Other check']);
-    assert.deepStrictEqual(await findWorkflowSecrets(dir), ['API_KEY']);
   });
 });

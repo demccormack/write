@@ -10,10 +10,8 @@ import {
   exec,
   getUser,
   listOrgs,
-  listSecrets,
   login,
   repoExists,
-  setSecret,
 } from '../github/gh.ts';
 
 export interface Prompter {
@@ -84,16 +82,6 @@ export function parseGithubRemote(url: string): string | undefined {
 export async function readBookTitle(cwd: string): Promise<string | undefined> {
   const toml = await readFile(join(cwd, 'book.toml'), 'utf8');
   return toml.match(/^\s*title\s*=\s*"((?:[^"\\]|\\.)*)"/m)?.[1];
-}
-
-export async function findWorkflowSecrets(cwd: string): Promise<string[]> {
-  const found = new Set<string>();
-  for (const { text } of await readWorkflows(cwd)) {
-    for (const m of text.matchAll(/secrets\.([A-Za-z_][A-Za-z0-9_]*)/g)) {
-      if (m[1] !== 'GITHUB_TOKEN') found.add(m[1]);
-    }
-  }
-  return [...found].sort();
 }
 
 /** Names GitHub reports as status checks: each job's `name`, else its id. */
@@ -324,26 +312,6 @@ export async function remoteAddGithub(
     for (const s of settings) {
       if (s.ok) log(`✓ ${s.label}`);
       else warnings.push(`${s.label} not applied: ${s.warning}`);
-    }
-
-    // Secrets
-    const needed = await findWorkflowSecrets(cwd);
-    if (needed.length) {
-      const have = await listSecrets(run, repo);
-      for (const secret of needed.filter((s) => !have.includes(s))) {
-        const set =
-          !options.yes &&
-          (await prompt.confirm(
-            `Workflow secret ${secret} is not set. Set it now? (skip to set later)`,
-            false,
-          )) &&
-          (await setSecret(run, repo, secret));
-        if (set) log(`✓ Secret ${secret} set`);
-        else
-          warnings.push(
-            `Secret ${secret} is not set. Run: gh secret set ${secret} --repo ${repo}`,
-          );
-      }
     }
 
     // 6. Summary
