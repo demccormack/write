@@ -321,6 +321,15 @@ describe('write new command', () => {
       copilotInstructionsContent.includes('typst compile main.typ'),
       'Copilot instructions should include the build command guidance',
     );
+
+    const readmeContent = await readFile(
+      join(projectPath, 'README.md'),
+      'utf8',
+    );
+    assert(readmeContent.startsWith(`# ${projectTitle}`));
+    assert(readmeContent.includes('git switch -c'));
+    assert(readmeContent.includes('gh pr create'));
+    assert(!readmeContent.includes('{{'), 'README placeholders replaced');
   });
 
   test('should handle titles with special characters', async () => {

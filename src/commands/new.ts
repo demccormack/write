@@ -153,6 +153,12 @@ export async function createNewProject(
       copilotInstructionsContent,
     );
 
+    // Create README with beginner-friendly writing and Git workflow guidance
+    const readmeContent = await processTemplate('README.md', {
+      BOOK_TITLE: title,
+    });
+    await writeFile(join(projectPath, 'README.md'), readmeContent);
+
     console.log(`✓ Created project directory structure in ${projectName}/`);
 
     if (git) {

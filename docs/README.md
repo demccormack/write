@@ -50,9 +50,10 @@ my-amazing-book
 ├── chapters
 │   └── chapter01.typ
 ├── main.typ
+├── README.md
 └── templates
 
-9 directories, 9 files
+9 directories, 10 files
 ```
 
 <!-- END AUTO-GENERATED STRUCTURE -->
