@@ -9,9 +9,9 @@ A scaffolding tool that creates professional book projects with Typst typesettin
 `write` sets up the infrastructure for serious book writing by creating a complete project with:
 
 - 📁 **Project scaffolding** - Organized directory structure for Typst books
-- 🔄 **Git repository** - Initialized with proper `.gitignore` and structure
-- 🚀 **GitHub integration** - Repository creation and CI/CD setup
-- ⚡ **Automated builds** - GitHub Actions to compile PDFs on every commit
+- 🔄 **Version history** - A Git repository, set up for you, that remembers every change you make
+- 🚀 **GitHub as your book's headquarters** - Online backup, mission control and publishing HQ in one place
+- ⚡ **Automatic PDFs** - Every time you save your work to GitHub, a fresh PDF of your book is built and emailed to you
 - 📚 **Typst templates** - Professional book layouts ready to use
 
 ## Quick Start
@@ -61,19 +61,25 @@ my-amazing-book
 
 1. **Edit in your preferred Typst editor** (VS Code with Tinymist, the Typst web app, etc.)
 2. **Format and lint automatically** - generated projects include VS Code settings (format on save with Tinymist) and a CI check that fails on unformatted or lint-failing Typst
-3. **Commit changes to Git** - every idea, immortalized in your git log
-4. **Collaborate via pull requests** - built-in review process
-5. **Download PDFs from GitHub Actions** - share early previews with interested parties
+3. **Save your progress** - each commit is a snapshot of your book you can always return to
+4. **Back up and share on GitHub** - see below
+5. **Get your PDF** - GitHub builds it for you; just click the link in your email or download it from the Actions tab
 
 ### Put Your Book on GitHub
 
-From inside the project, with the [GitHub CLI](https://cli.github.com/) installed:
+[GitHub](https://github.com) is a free website that acts as your book's headquarters:
+
+- **Backup** - your manuscript and its entire history are stored safely online, so a lost or broken laptop never costs you your book.
+- **Mission control** - see every change you've made and when, review suggestions from editors or friends, and check that your book still builds correctly.
+- **Publishing HQ** - every time you save your work, GitHub builds a fresh PDF you can download and share.
+
+You'll need a free GitHub account and the [GitHub CLI](https://cli.github.com/) (a small helper program). Then, from inside your book's folder:
 
 ```bash
 write remote add github   # or: write remote add gh
 ```
 
-This creates the repository (private by default), pushes your history, enables automatic branch deletion and Actions, adds a ruleset requiring CI to pass (repository admins can bypass). It is safe to re-run. Flags: `--name`, `--owner`, `--public`/`--private`, `--description`, `-y` (accept defaults).
+It walks you through signing in, then creates a private home for your book (you choose the name and whether it's public), uploads everything, and turns on sensible protections, such as checking that your book builds before changes are accepted. It's safe to run again if anything goes wrong part-way. Advanced options: `--name`, `--owner`, `--public`/`--private`, `--description`, `-y` (accept defaults).
 
 ## Roadmap Features
 
@@ -100,23 +106,22 @@ This tool **does not** provide a writing interface. Instead, it:
 - Creates the foundation for professional book publishing
 - Automates the boring infrastructure setup
 - Lets you focus on writing, not tooling
-- Uses industry-standard tools (Git, GitHub, Typst)
+- Uses industry-standard tools (Git, GitHub, Typst) and hides the jargon
 - Makes backups an integral part of your writing process
 - Enables collaborative workflows via pull requests
 
 ## Requirements
 
 - Node.js
-- Git (for version control)
-- GitHub account (for repository hosting and CI/CD)
+- Git (to keep a history of your changes; `write` sets it up for you)
+- GitHub account (free; your book's online backup and publishing HQ)
 - Typst editor (VS Code with Tinymist, the Typst web app, or another editor of your choice)
 
 ## Future Commands
 
 ```bash
-# Repository and CI setup
+# Project setup
 write new "Book Title" --template academic
-write publish                    # Create GitHub repo + CI
 
 # Project management
 write chapter "Chapter Name"     # Add new chapter file
