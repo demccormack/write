@@ -60,10 +60,9 @@ my-amazing-book
 ### What You Do Next
 
 1. **Edit in your preferred Typst editor** (VS Code with Tinymist, the Typst web app, etc.)
-2. **Format and lint automatically** - generated projects include VS Code settings (format on save with Tinymist) and a CI check that fails on unformatted or lint-failing Typst
-3. **Save your progress** - each commit is a snapshot of your book you can always return to
-4. **Back up and share on GitHub** - see below
-5. **Get your PDF** - GitHub builds it for you; just click the link in your email or download it from the Actions tab
+2. **Save your progress** - each commit is a snapshot of your book you can always return to
+3. **Back up and share on GitHub** - see below
+4. **Get your PDF** - GitHub builds it for you; just click the link in your email or download it from the Actions tab
 
 ### Put Your Book on GitHub
 
@@ -71,7 +70,7 @@ my-amazing-book
 
 - **Backup** - your manuscript and its entire history are stored safely online, so a lost or broken laptop never costs you your book.
 - **Mission control** - see every change you've made and when, review suggestions from editors or friends, and check that your book still builds correctly.
-- **Publishing HQ** - every time you save your work, GitHub builds a fresh PDF you can download and share.
+- **Publishing HQ** - every time you push your work, GitHub builds a fresh PDF you can download and share.
 
 You'll need a free GitHub account and the [GitHub CLI](https://cli.github.com/) (a small helper program). Then, from inside your book's folder:
 
