@@ -43,6 +43,7 @@ my-amazing-book
 ├── .vscode
 │   ├── extensions.json
 │   └── settings.json
+├── README.md
 ├── assets
 │   ├── figures
 │   └── images
@@ -50,7 +51,6 @@ my-amazing-book
 ├── chapters
 │   └── chapter01.typ
 ├── main.typ
-├── README.md
 └── templates
 
 9 directories, 10 files
