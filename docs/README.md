@@ -4,11 +4,11 @@
 
 `write` is a framework that sets you up to write a professional-quality book, so you can focus on your words instead of the tools. It creates a complete, organised project for your book and looks after the details for you:
 
-- 🔄 It remembers and backs up every change you make, so you can always go back to an earlier version
-- ☁️ It includes cloud backup, so a lost or broken computer never costs you your book
-- 🚀 It includes mission control, where you can see everything that's happened to your book and when
-- ⚡ It automatically builds a fresh PDF of your book whenever you save your work, and emails it to you
-- 📚 It provides professional book layouts, ready to use
+- 🔄 **Version control:** remembers every change, even the crazy ideas that didn't make it. Roll back to any previous state
+- ☁️ **Cloud backup:** a lost or broken computer never costs you your book
+- 🚀 **Mission control:** see everything that has happened to your book, and when
+- ⚡ **Automatic PDFs:** a fresh PDF is built and emailed to you whenever you save your work
+- 📚 **Professional layouts:** book designs ready to use
 
 ## Quick Start for Non-Technical Users
 
