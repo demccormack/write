@@ -2,17 +2,39 @@
 
 **The future of book creation tooling**
 
-A scaffolding tool that creates professional book projects with Typst typesetting, Git version control, and automated CI/CD publishing pipelines.
+`write` is a framework that sets you up to write a professional-quality book, so you can focus on your words instead of the tools. It creates a complete, organised project for your book and looks after the details for you:
 
-## What This Tool Does
+- 🔄 It remembers and backs up every change you make, so you can always go back to an earlier version
+- ☁️ It includes cloud backup, so a lost or broken computer never costs you your book
+- 🚀 It includes mission control, where you can see everything that's happened to your book and when
+- ⚡ It automatically builds a fresh PDF of your book whenever you save your work, and emails it to you
+- 📚 It provides professional book layouts, ready to use
 
-`write` sets up the infrastructure for serious book writing by creating a complete project with:
+## Quick Start for Non-Technical Users
 
-- 📁 **Project scaffolding** - Organized directory structure for Typst books
-- 🔄 **Version history** - A Git repository, set up for you, that remembers every change you make
-- 🚀 **GitHub as your book's headquarters** - Online backup, mission control and publishing HQ in one place
-- ⚡ **Automatic PDFs** - Every time you save your work to GitHub, a fresh PDF of your book is built and emailed to you
-- 📚 **Typst templates** - Professional book layouts ready to use
+You don't need to know any technical terms. Copy the prompt below, paste it into an AI assistant (such as ChatGPT, Claude or Copilot), and answer its questions. It will walk you through getting your book started, one step at a time.
+
+```text
+I want to start writing a book using a tool called "write"
+(https://github.com/demccormack/write). I am not technical, so please
+explain everything in plain language and guide me one small step at a time.
+
+First, read the project's README at
+https://github.com/demccormack/write/blob/main/docs/README.md
+so you know what the tool does.
+
+Then:
+1. Ask me what my book is called and what it is about.
+2. Ask what kind of computer I use (Windows, Mac, Linux) and check what I
+   need to install. Give me exact instructions for each thing.
+3. Help me install "write" and create my book project.
+4. Help me set up cloud backup for my book.
+5. Show me where to write my words, how to save my progress, and how to
+   get my PDF.
+
+Wait for me to confirm each step is done before moving to the next one. If
+something goes wrong, help me fix it.
+```
 
 ## Quick Start
 
