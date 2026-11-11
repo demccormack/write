@@ -2,7 +2,7 @@
 
 **The future of book creation tooling**
 
-`write` is a framework that sets you up to write a professional-quality book, so you can focus on your words instead of the tools. It creates a complete, organised project for your book and looks after the details for you:
+`write` is a free and open-source framework for writing professional-quality books, providing you with:
 
 - 🔄 **Version control:** remembers every change, even the crazy ideas that didn't make it. Roll back to any previous state
 - ☁️ **Cloud backup:** a lost or broken computer never costs you your book
@@ -11,7 +11,7 @@
 
 ## Quick Start for Non-Technical Users
 
-You don't need to know any technical terms. Copy the prompt below, paste it into an AI assistant (such as ChatGPT, Claude or Copilot), and answer its questions. It will walk you through getting your book started, one step at a time.
+Copy the prompt below and paste it into your favourite AI assistant:
 
 ```text
 I want to start writing a book using a tool called "write"
@@ -23,12 +23,11 @@ https://github.com/demccormack/write/blob/main/docs/README.md
 so you know what the tool does.
 
 Then:
-1. Ask me what my book is called and what it is about.
-2. Ask what kind of computer I use (Windows, Mac, Linux) and check what I
+1. Ask what kind of computer I use (Windows, Mac, Linux) and check what I
    need to install. Give me exact instructions for each thing.
-3. Help me install "write" and create my book project.
-4. Help me set up cloud backup for my book.
-5. Show me where to write my words, how to save my progress, and how to
+2. Help me install "write" and create my book project.
+3. Help me set up cloud backup for my book.
+4. Show me where to write my words, how to save my progress, and how to
    get my PDF.
 
 Wait for me to confirm each step is done before moving to the next one. If
