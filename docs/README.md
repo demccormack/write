@@ -2,17 +2,37 @@
 
 **The future of book creation tooling**
 
-A scaffolding tool that creates professional book projects with Typst typesetting, Git version control, and automated CI/CD publishing pipelines.
+`write` is a free and open-source framework for writing professional-quality books, providing you with:
 
-## What This Tool Does
+- 🔄 **Version control:** remembers every change, even the crazy ideas that didn't make it. Roll back to any previous state
+- ☁️ **Cloud backup:** a lost or broken computer never costs you your book
+- 🚀 **Mission control:** decide which changes make the cut
+- ⚡ **Automatic preview:** a fresh PDF is built and emailed to you whenever you save your work
 
-`write` sets up the infrastructure for serious book writing by creating a complete project with:
+## Quick Start for Non-Technical Users
 
-- 📁 **Project scaffolding** - Organized directory structure for Typst books
-- 🔄 **Version history** - A Git repository, set up for you, that remembers every change you make
-- 🚀 **GitHub as your book's headquarters** - Online backup, mission control and publishing HQ in one place
-- ⚡ **Automatic PDFs** - Every time you save your work to GitHub, a fresh PDF of your book is built and emailed to you
-- 📚 **Typst templates** - Professional book layouts ready to use
+Copy the prompt below and paste it into your favourite AI assistant:
+
+```text
+I want to start writing a book using a tool called "write"
+(https://github.com/demccormack/write). I am not technical, so please
+explain everything in plain language and guide me one small step at a time.
+
+First, read the project's README at
+https://github.com/demccormack/write/blob/main/docs/README.md
+so you know what the tool does.
+
+Then:
+1. Ask what kind of computer I use (Windows, Mac, Linux) and check what I
+   need to install. Give me exact instructions for each thing.
+2. Help me install "write" and create my book project.
+3. Help me set up cloud backup for my book.
+4. Show me where to write my words, how to save my progress, and how to
+   get my PDF.
+
+Wait for me to confirm each step is done before moving to the next one. If
+something goes wrong, help me fix it.
+```
 
 ## Quick Start
 
