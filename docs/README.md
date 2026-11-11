@@ -6,9 +6,8 @@
 
 - 🔄 **Version control:** remembers every change, even the crazy ideas that didn't make it. Roll back to any previous state
 - ☁️ **Cloud backup:** a lost or broken computer never costs you your book
-- 🚀 **Mission control:** see everything that has happened to your book, and when
-- ⚡ **Automatic PDFs:** a fresh PDF is built and emailed to you whenever you save your work
-- 📚 **Professional layouts:** book designs ready to use
+- 🚀 **Mission control:** decide which changes make the cut
+- ⚡ **Automatic preview:** a fresh PDF is built and emailed to you whenever you save your work
 
 ## Quick Start for Non-Technical Users
 
