@@ -38,9 +38,9 @@
 #heading(numbering: none)[Preface]
 Welcome to your new book! This is a Typst template to help you get started.
 
-// Include your chapters here
-// #include "chapters/chapter01.typ"
-// #include "chapters/chapter02.typ"
-
-= Introduction
+#heading(numbering: none)[Introduction]
 Write your introduction here.
+
+// Include your chapters here
+#include "chapters/chapter01.typ"
+// #include "chapters/chapter02.typ"
