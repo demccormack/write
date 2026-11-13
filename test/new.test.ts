@@ -244,6 +244,27 @@ describe('write-cli new command', () => {
       'Title should be substituted in main.typ',
     );
     assert(
+      content.includes('\n#include "chapters/chapter01.typ"'),
+      'Generated main.typ should include the first chapter',
+    );
+    assert(
+      content.indexOf('#heading(numbering: none)[Introduction]') <
+        content.indexOf('#include "chapters/chapter01.typ"'),
+      'Generated main.typ should place an unnumbered introduction before the first chapter',
+    );
+    const chapterContent = await readFile(
+      join(projectPath, 'chapters', 'chapter01.typ'),
+      'utf8',
+    );
+    assert(
+      chapterContent.includes('= Sample Chapter'),
+      'Generated chapter 1 should retain its numbered chapter heading',
+    );
+    assert(
+      !chapterContent.includes('=== Subsection Example'),
+      'Generated chapter 1 should not include a subsection example',
+    );
+    assert(
       content.includes('© #book-author, #datetime.today().year()'),
       'Generated main.typ should include a copyright notice with the current year',
     );

@@ -16,7 +16,7 @@ Welcome! This folder holds your book. You write in plain text files, and a PDF i
 1. **Open this folder in an editor.** [Visual Studio Code](https://code.visualstudio.com/) is recommended. It will offer to install the suggested "Tinymist" extension. Say yes: it shows a live preview of your book and tidies your text each time you save.
 2. **Set your name.** `write-cli new` asks for your author name or pen name. You can change `book-author` near the top of `main.typ` later (also in `book.toml`).
 3. **Write your first chapter.** Open `chapters/chapter01.typ` and replace the sample text with your own.
-4. **Add the chapter to the book.** In `main.typ`, find the line `// #include "chapters/chapter01.typ"` and remove the two slashes and space at the start (`//`). A chapter only appears in the book once it is included. For each new chapter, copy `chapter01.typ` to `chapter02.typ`, and so on, and add a matching `#include` line.
+4. **Add more chapters to the book.** The first chapter is already included. For each new chapter, copy `chapter01.typ` to `chapter02.typ`, and so on, and add a matching `#include` line in `main.typ`.
 
 ### Quick formatting guide
 
