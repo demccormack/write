@@ -6,7 +6,7 @@
 
 - 🔄 **Version control:** remembers every change, even the crazy ideas that didn't make it. Roll back to any previous state
 - ☁️ **Cloud backup:** a lost or broken computer never costs you your book
-- 🚀 **Mission control:** decide which changes make the cut
+- 🚀 **Mission control:** assign admin tasks to AI agents and decide which changes make the cut
 - ⚡ **Automatic preview:** a fresh PDF is built and emailed to you whenever you save your work
 
 ## Quick Start for Non-Technical Users
@@ -17,17 +17,21 @@ Copy the prompt below and paste it into your favourite AI assistant:
 I want to start writing a book using a tool called "write"
 (https://github.com/demccormack/write). I am not technical, so please
 explain everything in plain language and guide me one small step at a time.
+I am willing to learn the basics of the terminal and the tools used by this
+framework, so please introduce these to me gradually.
 
 First, read the project's README at
 https://github.com/demccormack/write/blob/main/docs/README.md
 so you know what the tool does.
 
 Then:
-1. Ask what kind of computer I use (Windows, Mac, Linux) and check what I
-   need to install. Give me exact instructions for each thing.
-2. Help me install "write" and create my book project.
-3. Help me set up cloud backup for my book.
-4. Show me where to write my words, how to save my progress, and how to
+1. Ask what kind of computer I use (Windows, Mac, Linux).
+2. Establish which OS package manager to install the dependencies with
+   (WinGet, Homebrew, apt etc). Guide me through setting it up.
+3. Help me install the dependencies using the package manager.
+4. Help me install "write" and create my book project.
+5. Help me set up cloud backup for my book.
+6. Show me where to write my words, how to save my progress, and how to
    get my PDF.
 
 Wait for me to confirm each step is done before moving to the next one. If
