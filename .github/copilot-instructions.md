@@ -32,7 +32,7 @@ it only generates project structure, templates, and CI config for the books it c
   `-v/--version`, `-h/--help`, then dispatches to a `switch` on the first positional arg
   (currently only `new`). New subcommands are added as a new `case` here plus a new file under
   `src/commands/`.
-- `src/commands/new.ts` implements `write new <title>`: it converts the title to a slug
+- `src/commands/new.ts` implements `write-cli new <title>`: it converts the title to a slug
   (`titleToDirectoryName`), creates the project directory tree, and renders/copies files from
   `src/templates/` into the new project. Templates with placeholders (`main.typ`, `book.toml`)
   go through `processTemplate`, which does simple `{{PLACEHOLDER}}` string substitution; static
