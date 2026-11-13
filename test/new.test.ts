@@ -229,6 +229,11 @@ describe('write new command', () => {
       'Generated main.typ should include the first chapter',
     );
     assert(
+      content.indexOf('= Introduction') <
+        content.indexOf('#include "chapters/chapter01.typ"'),
+      'Generated main.typ should place the introduction before the first chapter',
+    );
+    assert(
       content.includes('© #book-author, #datetime.today().year()'),
       'Generated main.typ should include a copyright notice with the current year',
     );
