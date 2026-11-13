@@ -225,6 +225,10 @@ describe('write new command', () => {
       'Title should be substituted in main.typ',
     );
     assert(
+      content.includes('\n#include "chapters/chapter01.typ"'),
+      'Generated main.typ should include the first chapter',
+    );
+    assert(
       content.includes('© #book-author, #datetime.today().year()'),
       'Generated main.typ should include a copyright notice with the current year',
     );
