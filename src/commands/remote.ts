@@ -10,7 +10,6 @@ import {
   exec,
   getUser,
   listOrgs,
-  login,
   repoExists,
 } from '../github/gh.ts';
 import { isOwnRepo } from '../git.ts';
@@ -109,7 +108,7 @@ async function readWorkflows(cwd: string) {
 }
 
 /**
- * `write remote add github`. Returns the process exit code.
+ * `write-cli remote add github`. Returns the process exit code.
  */
 export async function remoteAddGithub(
   options: RemoteOptions,
@@ -137,7 +136,7 @@ export async function remoteAddGithub(
       (await git('rev-parse', '--verify', 'HEAD')).code !== 0
     ) {
       throw new FatalError(
-        'This project has no Git repository with an initial commit yet. Run "write setup" first, then re-run this command.',
+        'This project has no Git repository with an initial commit yet. Run "write-cli setup" first, then re-run this command.',
       );
     }
     const originUrl = (await git('remote', 'get-url', 'origin')).stdout.trim();
@@ -149,7 +148,7 @@ export async function remoteAddGithub(
     }
 
     // 2. Check the GitHub CLI
-    let auth = await checkAuth(run);
+    const auth = await checkAuth(run);
     if (auth === 'missing') {
       throw new FatalError(
         `GitHub CLI (gh) was not found on your PATH. Install it from ${GH_INSTALL_URL} and re-run this command.`,
@@ -157,18 +156,9 @@ export async function remoteAddGithub(
     }
     log('✓ GitHub CLI installed');
     if (auth === 'unauthenticated') {
-      if (
-        !options.yes &&
-        (await prompt.confirm('Not logged in to GitHub. Run gh auth login?'))
-      ) {
-        await login(run);
-        auth = await checkAuth(run);
-      }
-      if (auth !== 'ok') {
-        throw new FatalError(
-          'Not authenticated with GitHub. Run "gh auth login" and re-run this command.',
-        );
-      }
+      throw new FatalError(
+        'Not authenticated with GitHub. Run "gh auth login" in your terminal, then re-run "write-cli remote add github".',
+      );
     }
     const user = await getUser(run);
     if (!user) {
@@ -245,7 +235,7 @@ export async function remoteAddGithub(
         return 0;
       }
     }
-    resume = `Fix the problem and re-run "write remote add github" to resume; completed steps are skipped.`;
+    resume = `Fix the problem and re-run "write-cli remote add github" to resume; completed steps are skipped.`;
 
     if ((await git('status', '--porcelain')).stdout.trim()) {
       warnings.push(

@@ -8,6 +8,7 @@ export interface ExecResult {
 
 export interface ExecOptions {
   cwd?: string;
+  env?: NodeJS.ProcessEnv;
   input?: string;
   /** Connect the child to the terminal so it can prompt the user. */
   inherit?: boolean;
@@ -23,6 +24,7 @@ export const exec: Exec = (command, args, options = {}) =>
   new Promise((resolve) => {
     const child = spawn(command, args, {
       cwd: options.cwd,
+      env: options.env,
       stdio: options.inherit
         ? 'inherit'
         : [options.input === undefined ? 'ignore' : 'pipe', 'pipe', 'pipe'],
@@ -61,10 +63,6 @@ export async function checkAuth(run: Exec): Promise<AuthState> {
   return (await run('gh', ['auth', 'status'])).code === 0
     ? 'ok'
     : 'unauthenticated';
-}
-
-export async function login(run: Exec): Promise<boolean> {
-  return (await run('gh', ['auth', 'login'], { inherit: true })).code === 0;
 }
 
 export async function getUser(run: Exec): Promise<string | undefined> {

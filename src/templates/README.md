@@ -14,7 +14,7 @@ Welcome! This folder holds your book. You write in plain text files, and a PDF i
 ## Start writing
 
 1. **Open this folder in an editor.** [Visual Studio Code](https://code.visualstudio.com/) is recommended. It will offer to install the suggested "Tinymist" extension. Say yes: it shows a live preview of your book and tidies your text each time you save.
-2. **Set your name.** Open `main.typ` and change `book-author` near the top (also in `book.toml`).
+2. **Set your name.** `write-cli new` asks for your author name or pen name. You can change `book-author` near the top of `main.typ` later (also in `book.toml`).
 3. **Write your first chapter.** Open `chapters/chapter01.typ` and replace the sample text with your own.
 4. **Add the chapter to the book.** In `main.typ`, find the line `// #include "chapters/chapter01.typ"` and remove the two slashes and space at the start (`//`). A chapter only appears in the book once it is included. For each new chapter, copy `chapter01.typ` to `chapter02.typ`, and so on, and add a matching `#include` line.
 
@@ -99,7 +99,14 @@ git pull
 
 ## Is my book on GitHub yet?
 
-The workflow above needs your book stored on GitHub. If you have not done this, run `write remote add github` from this folder and follow the prompts.
+The workflow above needs your book stored on GitHub. Before making your first commit, enable **Keep my email addresses private** and **Block command line pushes that expose my email address** in [GitHub email settings](https://github.com/settings/emails). Use the GitHub-generated `noreply` address when `write-cli` asks for your Git email; this email is saved only in the local Git config, not in your book files.
+
+If you do not have a GitHub account yet, you can postpone the first commit:
+
+1. Run `write-cli new "Book Title" --no-git`.
+2. [Create a GitHub account](https://github.com/signup) and enable the email privacy settings above.
+3. From the book folder, run `write-cli setup` and enter your author name and GitHub `noreply` email.
+4. Run `gh auth login`, then `write-cli remote add github`.
 
 ## Let an AI assistant do the admin
 

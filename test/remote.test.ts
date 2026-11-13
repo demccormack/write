@@ -71,7 +71,10 @@ describe('remote add github', () => {
       join(dir, '.github', 'workflows', 'build.yml'),
       'name: Build\njobs:\n  build:\n    runs-on: x\n    steps:\n      - run: echo ${{ secrets.GITHUB_TOKEN }}\n  other:\n    name: Other check\n    runs-on: x\n',
     );
-    await setupGitRepo(exec, dir);
+    await setupGitRepo(exec, dir, {
+      name: 'Test',
+      email: 'test@example.com',
+    });
   });
   afterEach(() => rm(dir, { recursive: true, force: true }));
 
@@ -129,13 +132,30 @@ describe('remote add github', () => {
     f = fake((a) => (a[0] === 'auth' ? fail() : undefined));
     assert.strictEqual(await run(f), 1);
     assert.ok(logs.some((l) => l.includes('gh auth login')));
+    assert.ok(!f.calls.includes('gh auth login'));
+  });
+
+  test('asks the user to run gh auth login separately', async () => {
+    const f = fake((a) => (a[0] === 'auth' ? fail() : happyGh(a)));
+    const result = await remoteAddGithub(
+      {},
+      {
+        run: f.run,
+        prompt: { ...defaultsPrompter, confirm: async () => true },
+        cwd: dir,
+        log,
+      },
+    );
+    assert.strictEqual(result, 1);
+    assert.ok(logs.some((message) => message.includes('gh auth login')));
+    assert.ok(!f.calls.includes('gh auth login'));
   });
 
   test('does not initialise or commit; asks the user to run setup', async () => {
     await rm(join(dir, '.git'), { recursive: true });
     const f = fake(happyGh);
     assert.strictEqual(await run(f), 1);
-    assert.ok(logs.some((l) => l.includes('write setup')));
+    assert.ok(logs.some((l) => l.includes('write-cli setup')));
     assert.ok(!f.calls.some((c) => /^git (init|commit|add)/.test(c)));
     assert.ok(!f.calls.some((c) => c.startsWith('gh ')));
   });

@@ -3,7 +3,11 @@ import assert from 'node:assert';
 import { spawn } from 'node:child_process';
 import { mkdir, rm, readFile, stat, writeFile } from 'fs/promises';
 import { join } from 'path';
-import { createNewProject } from '../src/commands/new.ts';
+import {
+  createNewProject,
+  type NewProjectOptions,
+} from '../src/commands/new.ts';
+import { exec } from '../src/github/gh.ts';
 
 const TMP_DIR = 'tmp';
 const TEST_SUBDIR = 'test-new-command';
@@ -40,7 +44,7 @@ async function updateReadmeWithStructure(
     const embeddedContent = `
 
 \`\`\`bash
-write new "${projectTitle}"
+write-cli new "${projectTitle}"
 \`\`\`
 
 This creates a local directory with the following structure:
@@ -66,6 +70,7 @@ ${treeOutput}
 async function runCreateNewProject(
   title: string,
   cwd: string,
+  options: NewProjectOptions = {},
 ): Promise<{ stdout: string; stderr: string; code: number }> {
   const originalCwd = process.cwd();
   const originalLog = console.log;
@@ -83,7 +88,11 @@ async function runCreateNewProject(
 
   try {
     process.chdir(cwd);
-    await createNewProject(title);
+    await createNewProject(title, {
+      author: 'Your Name',
+      email: 'test@example.com',
+      ...options,
+    });
     return { stdout, stderr, code: 0 };
   } catch (error) {
     stderr += `${error}\n`;
@@ -146,7 +155,7 @@ async function isDirectory(dirPath: string): Promise<boolean> {
   }
 }
 
-describe('write new command', () => {
+describe('write-cli new command', () => {
   before(async () => {
     process.env.GIT_AUTHOR_NAME = process.env.GIT_COMMITTER_NAME = 'Test';
     process.env.GIT_AUTHOR_EMAIL = process.env.GIT_COMMITTER_EMAIL =
@@ -187,6 +196,16 @@ describe('write new command', () => {
     assert(
       await isDirectory(projectPath),
       'Main project directory should exist',
+    );
+    assert(
+      await isDirectory(join(projectPath, '.git')),
+      'Git repository should be initialised',
+    );
+    assert(
+      (await readFile(join(projectPath, '.gitignore'), 'utf8')).includes(
+        '*.pdf',
+      ),
+      'Generated project should include the .gitignore template',
     );
 
     // Get tree structure, snapshot it and update README
@@ -271,6 +290,41 @@ describe('write new command', () => {
     );
   });
 
+  test('should use the selected author and configure Git identity locally', async () => {
+    const projectPath = join(TEST_PATH, 'private-identity-test');
+    const email = '12345+pen-name@users.noreply.github.com';
+    const author = 'Pen $& Name';
+    await runCreateNewProject('Private Identity Test', TEST_PATH, {
+      author,
+      email,
+    });
+
+    const main = await readFile(join(projectPath, 'main.typ'), 'utf8');
+    const config = await readFile(join(projectPath, 'book.toml'), 'utf8');
+    assert.ok(main.includes(`#let book-author = "${author}"`));
+    assert.ok(config.includes(`author = "${author}"`));
+    assert.ok(!main.includes(email));
+    assert.ok(!config.includes(email));
+
+    const localName = await exec(
+      'git',
+      ['config', '--local', '--get', 'user.name'],
+      { cwd: projectPath },
+    );
+    const localEmail = await exec(
+      'git',
+      ['config', '--local', '--get', 'user.email'],
+      { cwd: projectPath },
+    );
+    assert.strictEqual(localName.stdout.trim(), author);
+    assert.strictEqual(localEmail.stdout.trim(), email);
+
+    const commit = await exec('git', ['log', '-1', '--format=%an <%ae>'], {
+      cwd: projectPath,
+    });
+    assert.strictEqual(commit.stdout.trim(), `${author} <${email}>`);
+  });
+
   test('should create templated automation files', async () => {
     const projectTitle = 'Automation Test Book';
     const projectName = 'automation-test-book';
@@ -327,12 +381,22 @@ describe('write new command', () => {
       copilotInstructionsContent.includes('typst compile main.typ'),
       'Copilot instructions should include the build command guidance',
     );
+    assert(
+      copilotInstructionsContent.includes('GitHub `noreply` email'),
+      'Copilot instructions should protect the author email',
+    );
 
     const readmeContent = await readFile(
       join(projectPath, 'README.md'),
       'utf8',
     );
     assert(readmeContent.startsWith(`# ${projectTitle}`));
+    assert(readmeContent.includes('Keep my email addresses private'));
+    assert(
+      readmeContent.includes(
+        'Block command line pushes that expose my email address',
+      ),
+    );
     assert(readmeContent.includes('git switch -c'));
     assert(readmeContent.includes('gh pr create'));
     assert(!readmeContent.includes('{{'), 'README placeholders replaced');
@@ -362,7 +426,7 @@ describe('write new command', () => {
 
     const configPath = join(projectPath, 'book.toml');
     const configContent = await readFile(configPath, 'utf8');
-    assert(configContent.includes(`title = "${projectTitle}"`));
+    assert(configContent.includes('title = "My \\"Amazing\\" Book & More!!!"'));
   });
 
   test('should create projects in the current working directory', async () => {

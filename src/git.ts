@@ -31,6 +31,22 @@ export interface GitSetupResult {
   committed: boolean;
 }
 
+export interface GitIdentity {
+  name: string;
+  email: string;
+}
+
+export async function getLocalGitIdentity(
+  run: Exec,
+  cwd: string,
+): Promise<GitIdentity | undefined> {
+  const git = (...args: string[]) => run('git', args, { cwd });
+  const name = await git('config', '--local', '--get', 'user.name');
+  const email = await git('config', '--local', '--get', 'user.email');
+  if (name.code !== 0 || email.code !== 0) return undefined;
+  return { name: name.stdout.trim(), email: email.stdout.trim() };
+}
+
 /**
  * Idempotently make `cwd` its own Git repository with an initial commit.
  * Safe to re-run after fixing whatever made it fail.
@@ -38,8 +54,14 @@ export interface GitSetupResult {
 export async function setupGitRepo(
   run: Exec,
   cwd: string,
+  identity?: GitIdentity,
 ): Promise<GitSetupResult> {
-  const git = (...args: string[]) => run('git', args, { cwd });
+  const gitEnv = { ...process.env };
+  delete gitEnv.GIT_AUTHOR_NAME;
+  delete gitEnv.GIT_AUTHOR_EMAIL;
+  delete gitEnv.GIT_COMMITTER_NAME;
+  delete gitEnv.GIT_COMMITTER_EMAIL;
+  const git = (...args: string[]) => run('git', args, { cwd, env: gitEnv });
 
   if ((await git('--version')).code !== 0) {
     throw new GitSetupError(
@@ -58,7 +80,35 @@ export async function setupGitRepo(
     return { committed: false };
   }
 
-  // useConfigOnly stops git guessing an identity from the hostname
+  if (identity) {
+    if (!identity.name.trim() || !identity.email.trim()) {
+      throw new GitSetupError(
+        'A project-specific Git name and email address are required before the initial commit.',
+      );
+    }
+    const name = await git('config', '--local', 'user.name', identity.name);
+    if (name.code !== 0) {
+      throw new GitSetupError(
+        `Could not set local Git name: ${name.stderr.trim()}`,
+      );
+    }
+    const email = await git('config', '--local', 'user.email', identity.email);
+    if (email.code !== 0) {
+      throw new GitSetupError(
+        `Could not set local Git email: ${email.stderr.trim()}`,
+      );
+    }
+  }
+
+  if (!(await getLocalGitIdentity(run, cwd))) {
+    throw new GitSetupError(
+      [
+        'Git needs a project-specific author name and email before the initial commit.',
+        'Run "write-cli setup" interactively or pass --author and --email, using your GitHub noreply email.',
+      ].join('\n'),
+    );
+  }
+
   const ident = (kind: string) =>
     git('-c', 'user.useConfigOnly=true', 'var', kind);
   const identityOk =
@@ -67,9 +117,8 @@ export async function setupGitRepo(
   if (!identityOk) {
     throw new GitSetupError(
       [
-        'Git needs to know who you are before it can save your work. Run:',
-        '  git config --global user.name "Your Name"',
-        '  git config --global user.email "you@example.com"',
+        'Git could not use this project-specific identity to create the initial commit.',
+        'Run "write-cli setup" and enter your author name and GitHub noreply email again.',
       ].join('\n'),
     );
   }
