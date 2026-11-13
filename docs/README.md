@@ -29,9 +29,13 @@ Then:
 2. Establish which OS package manager to install the dependencies with
    (WinGet, Homebrew, apt etc). Guide me through setting it up.
 3. Help me install the dependencies using the package manager.
-4. Help me install "write" and create my book project.
-5. Help me set up cloud backup for my book.
-6. Show me where to write my words, how to save my progress, and how to
+4. Help me install "write" and create my book project with the `write-cli`
+   command.
+5. If I do not have a GitHub account, help me create one. Before the first
+   commit, help me enable GitHub email privacy and use my GitHub noreply email
+   with `write-cli`.
+6. Help me set up cloud backup for my book.
+7. Show me where to write my words, how to save my progress, and how to
    get my PDF.
 
 Wait for me to confirm each step is done before moving to the next one. If
@@ -51,7 +55,7 @@ npm install -g @demccormack/write
 <!-- BEGIN AUTO-GENERATED STRUCTURE -->
 
 ```bash
-write new "My Amazing Book"
+write-cli new "My Amazing Book"
 ```
 
 This creates a local directory with the following structure:
@@ -97,13 +101,16 @@ my-amazing-book
 - **Mission control** - see every change you've made and when, review suggestions from editors or friends, and check that your book still builds correctly.
 - **Publishing HQ** - every time you push your work, GitHub builds a fresh PDF you can download and share.
 
-You'll need a free GitHub account and the [GitHub CLI](https://cli.github.com/) (a small helper program). Then, from inside your book's folder:
+Before the first commit, `write-cli new` asks for your book author or pen name and a Git email. Use the private `noreply` address shown in your [GitHub email settings](https://github.com/settings/emails); it is stored only in this project's local Git config and is not added to book files. If you do not have a GitHub account yet, create the project without Git using `--no-git`, create the account, then run `write-cli setup` from the project directory.
+
+In GitHub's email settings, enable **Keep my email addresses private** and **Block command line pushes that expose my email address**. Then install the [GitHub CLI](https://cli.github.com/) and, from inside your book's folder, run:
 
 ```bash
-write remote add github   # or: write remote add gh
+gh auth login
+write-cli remote add github   # or: write-cli remote add gh
 ```
 
-It walks you through signing in, then creates a private home for your book (you choose the name and whether it's public), uploads everything, and turns on sensible protections, such as checking that your book builds before changes are accepted. It's safe to run again if anything goes wrong part-way. Advanced options: `--name`, `--owner`, `--public`/`--private`, `--description`, `-y` (accept defaults).
+The command creates a private home for your book (you choose the name and whether it's public), uploads everything, and turns on sensible protections, such as checking that your book builds before changes are accepted. It's safe to run again if anything goes wrong part-way. Advanced options: `--name`, `--owner`, `--public`/`--private`, `--description`, `-y` (accept defaults).
 
 ## Roadmap Features
 
@@ -137,7 +144,7 @@ This tool **does not** provide a writing interface. Instead, it:
 ## Requirements
 
 - Node.js
-- Git (to keep a history of your changes; `write` sets it up for you)
+- Git (to keep a history of your changes; `write-cli` sets it up for you)
 - GitHub account (free; your book's online backup and publishing HQ)
 - Typst editor (VS Code with Tinymist, the Typst web app, or another editor of your choice)
 
@@ -145,12 +152,12 @@ This tool **does not** provide a writing interface. Instead, it:
 
 ```bash
 # Project setup
-write new "Book Title" --template academic
+write-cli new "Book Title" --template academic
 
 # Project management
-write chapter "Chapter Name"     # Add new chapter file
-write build                      # Local PDF build (if Typst installed)
-write status                     # Git status + build info
+write-cli chapter "Chapter Name"     # Add new chapter file
+write-cli build                      # Local PDF build (if Typst installed)
+write-cli status                     # Git status + build info
 ```
 
 ## Contributing

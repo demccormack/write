@@ -8,6 +8,7 @@ import { exec, type Exec } from '../src/github/gh.ts';
 
 describe('setupGitRepo', () => {
   let dir: string;
+  const identity = { name: 'Test Pen Name', email: 'test@example.com' };
   const saved = { ...process.env };
 
   beforeEach(async () => {
@@ -24,11 +25,28 @@ describe('setupGitRepo', () => {
   });
 
   test('initialises and commits, excluding sensitive files, and is idempotent', async () => {
-    assert.deepStrictEqual(await setupGitRepo(exec, dir), { committed: true });
+    assert.deepStrictEqual(await setupGitRepo(exec, dir, identity), {
+      committed: true,
+    });
     const tracked = (await exec('git', ['ls-files'], { cwd: dir })).stdout;
     assert.ok(tracked.includes('book.toml'));
     assert.ok(!tracked.includes('.env'));
     assert.deepStrictEqual(await setupGitRepo(exec, dir), { committed: false });
+    assert.strictEqual(
+      (
+        await exec('git', ['config', '--local', '--get', 'user.email'], {
+          cwd: dir,
+        })
+      ).stdout.trim(),
+      identity.email,
+    );
+  });
+
+  test('does not use a global or environment Git identity for the first commit', async () => {
+    await assert.rejects(
+      setupGitRepo(exec, dir),
+      /project-specific author name and email/,
+    );
   });
 
   test('creates its own repo inside a parent repository', async () => {
@@ -36,7 +54,7 @@ describe('setupGitRepo', () => {
     const child = join(dir, 'book');
     await mkdir(child);
     await writeFile(join(child, 'book.toml'), 'x');
-    await setupGitRepo(exec, child);
+    await setupGitRepo(exec, child, identity);
     const top = (
       await exec('git', ['rev-parse', '--show-toplevel'], { cwd: child })
     ).stdout.trim();
@@ -57,7 +75,12 @@ describe('setupGitRepo', () => {
       args.includes('var')
         ? Promise.resolve({ code: 128, stdout: '', stderr: 'unknown' })
         : exec(cmd, args, o);
-    await assert.rejects(setupGitRepo(noIdentity, dir), /user\.name/);
-    assert.deepStrictEqual(await setupGitRepo(exec, dir), { committed: true });
+    await assert.rejects(
+      setupGitRepo(noIdentity, dir),
+      /project-specific author name and email/,
+    );
+    assert.deepStrictEqual(await setupGitRepo(exec, dir, identity), {
+      committed: true,
+    });
   });
 });

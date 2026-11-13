@@ -2,13 +2,19 @@ import { mkdir, writeFile, readFile, copyFile } from 'fs/promises';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { version } from './version.ts';
-import { GitSetupError, setupGitRepo } from '../git.ts';
+import { GitSetupError, setupGitRepo, type GitIdentity } from '../git.ts';
 import { exec } from '../github/gh.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const TEMPLATES_DIR = join(__dirname, '..', 'templates');
 const DEFAULT_AUTHOR = 'Your Name';
+
+export interface NewProjectOptions {
+  git?: boolean;
+  author?: string;
+  email?: string;
+}
 
 /**
  * Read a template file and replace placeholders with actual values
@@ -23,7 +29,7 @@ async function processTemplate(
   // Replace all placeholders
   for (const [placeholder, value] of Object.entries(replacements)) {
     const regex = new RegExp(`{{${placeholder}}}`, 'g');
-    content = content.replace(regex, value);
+    content = content.replace(regex, () => value);
   }
 
   return content;
@@ -59,12 +65,16 @@ function escapeTypstString(value: string): string {
   return value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
 }
 
+function escapeTomlString(value: string): string {
+  return value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+}
+
 /**
  * Create a new Typst book project with scaffolding
  */
 export async function createNewProject(
   title: string,
-  { git = true }: { git?: boolean } = {},
+  { git = true, author = DEFAULT_AUTHOR, email }: NewProjectOptions = {},
 ): Promise<void> {
   const projectName = titleToDirectoryName(title);
   const projectPath = join(process.cwd(), projectName);
@@ -95,7 +105,7 @@ export async function createNewProject(
     // Create main.typ file
     const mainTypContent = await processTemplate('main.typ', {
       BOOK_TITLE: escapeTypstString(title),
-      BOOK_AUTHOR: escapeTypstString(DEFAULT_AUTHOR),
+      BOOK_AUTHOR: escapeTypstString(author),
     });
     await writeFile(join(projectPath, 'main.typ'), mainTypContent);
 
@@ -107,14 +117,14 @@ export async function createNewProject(
 
     // Create book.toml configuration
     const bookTomlContent = await processTemplate('book.toml', {
-      BOOK_TITLE: title,
-      BOOK_AUTHOR: DEFAULT_AUTHOR,
+      BOOK_TITLE: escapeTomlString(title),
+      BOOK_AUTHOR: escapeTomlString(author),
       WRITE_VERSION: version,
     });
     await writeFile(join(projectPath, 'book.toml'), bookTomlContent);
 
     // Create .gitignore for Typst projects
-    await copyTemplate('.gitignore', join(projectPath, '.gitignore'));
+    await copyTemplate('gitignore', join(projectPath, '.gitignore'));
 
     // Create GitHub Actions workflow for PDF builds and previews
     const buildWorkflowContent = await processTemplate('build.yml', {
@@ -145,7 +155,7 @@ export async function createNewProject(
       'copilot-instructions.md',
       {
         BOOK_TITLE: title,
-        BOOK_AUTHOR: DEFAULT_AUTHOR,
+        BOOK_AUTHOR: author,
       },
     );
     await writeFile(
@@ -163,7 +173,10 @@ export async function createNewProject(
 
     if (git) {
       try {
-        await setupGitRepo(exec, projectPath);
+        const identity: GitIdentity | undefined = email
+          ? { name: author, email }
+          : undefined;
+        await setupGitRepo(exec, projectPath, identity);
         console.log('✓ Initialised Git repository with an initial commit');
       } catch (error) {
         if (!(error instanceof GitSetupError)) throw error;
@@ -172,7 +185,7 @@ export async function createNewProject(
         console.error(error.message);
         console.error('');
         console.error('Once fixed, finish setting up with:');
-        console.error(`  cd ${projectName} && write setup`);
+        console.error(`  cd ${projectName} && write-cli setup`);
         process.exit(1);
       }
     }
@@ -184,8 +197,8 @@ export async function createNewProject(
     console.log('  # Add chapters in the chapters/ directory');
     console.log(
       git
-        ? '  # Optional: write remote add github'
-        : '  # Run "write setup" when you want Git version history',
+        ? '  # Optional: write-cli remote add github'
+        : '  # Run "write-cli setup" when you want Git version history',
     );
   } catch (error) {
     console.error(`Error creating project: ${error}`);

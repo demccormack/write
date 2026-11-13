@@ -6,6 +6,8 @@ This repository contains the Typst source for _{{BOOK_TITLE}}_, a book being wri
 
 The content of the book is written by the author. Copilot's role in this repository is solely technical: maintaining and improving the Typst code, document structure, build system, and supporting tooling.
 
+Never add the author's Git email address to book files or publish it in commands or documentation. Git identity is configured locally; use the author's GitHub `noreply` email for commits.
+
 ## Important: preserve the author's writing
 
 Self-expression is a sacred act. The author's words are theirs, and theirs alone.
