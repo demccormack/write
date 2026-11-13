@@ -38,7 +38,7 @@
 #heading(numbering: none)[Preface]
 Welcome to your new book! This is a Typst template to help you get started.
 
-= Introduction
+#heading(numbering: none)[Introduction]
 Write your introduction here.
 
 // Include your chapters here
