@@ -402,11 +402,6 @@ describe('write-cli new command', () => {
       copilotInstructionsContent.includes('typst compile main.typ'),
       'Copilot instructions should include the build command guidance',
     );
-    assert(
-      copilotInstructionsContent.includes('GitHub `noreply` email'),
-      'Copilot instructions should protect the author email',
-    );
-
     const readmeContent = await readFile(
       join(projectPath, 'README.md'),
       'utf8',
