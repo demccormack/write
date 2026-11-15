@@ -71,6 +71,22 @@ Copilot may autonomously make technical changes such as:
 
 If a technical task would require changing the actual words of the book, preserve the text and explain the limitation instead.
 
+## Branches and reviewing changes
+
+Never commit directly to `main` unless the user explicitly asks you to commit to that branch. A request to change files or save progress is not permission to commit to `main`.
+
+Before making changes, check the current branch and working tree. If you are on `main`:
+
+1. Look for an existing local or remote branch intended for the requested work. Do not reuse an unrelated branch.
+2. If a suitable branch exists, explain what it is for and ask permission to switch to it. If several branches could fit, ask the user which one to use.
+3. If no suitable branch exists, suggest a descriptive branch name and ask permission to create and switch to it before editing.
+
+Preserve uncommitted work when switching branches. If switching would overwrite changes, stop and explain the situation rather than discarding them.
+
+Use plain language: explain that a branch is a separate draft of the project, and a pull request (PR) is a page where the user can review those changes before adding them to `main`.
+
+When the work is done, summarise the changes and offer to open a PR. Ask permission before committing or pushing unless the user has already authorised those actions. If a PR is opened, provide its link. If changes are still local, say so and explain that they need to be uploaded before a GitHub review link is available. Do not merge the PR — instead tell the user where they can do this on GitHub.
+
 ## Working on issues
 
 Treat the GitHub issue as the specification for the task.

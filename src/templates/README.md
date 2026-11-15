@@ -2,6 +2,32 @@
 
 Welcome! This folder holds your book. You write in plain text files, and a PDF is built for you automatically. No technical knowledge is needed beyond what's explained here.
 
+## Start writing
+
+1. **Open this folder in an editor.** [Visual Studio Code](https://code.visualstudio.com/) is recommended. It will offer to install the suggested "Tinymist" extension. Say yes: it shows a live preview of your book and tidies your text each time you save.
+2. **Set up your GitHub account.** If you do not already have one, [create a GitHub account](https://github.com/signup). In [GitHub email settings](https://github.com/settings/emails), enable **Keep my email addresses private** and **Block command line pushes that expose my email address**. Use the GitHub-generated `noreply` address when `write-cli` asks for your Git email; this email is saved only in the local Git config, not in your book files. If you created this project with `--no-git`, run `write-cli setup` from this folder and enter your author name and GitHub `noreply` email before making your first commit.
+3. **Put your book on GitHub.** From this folder, run `gh auth login` to sign in, then run `write-cli remote add github` and follow the prompts.
+4. **Write your first chapter.** Open `chapters/chapter01.typ` and replace the sample text with your own.
+5. **Add more chapters to the book.** The first chapter is already included. For each new chapter, copy `chapter01.typ` to `chapter02.typ`, and so on, and add a matching `#include` line in `main.typ`.
+
+## Let an AI assistant do the admin
+
+You don't have to memorise any of the commands in this guide. AI assistants are very good at the "admin" side of writing: creating branches, committing, opening pull requests, adding a new chapter, fixing a build error, or explaining what a message means. Your writing stays yours; the assistant handles the fiddly bits.
+
+To get started with GitHub Copilot in VS Code:
+
+1. **Get Copilot.** Sign in to GitHub in VS Code (click the person icon at the bottom of the left sidebar). The [free plan](https://github.com/features/copilot) is enough to begin with.
+2. **Open Copilot Chat.** Click the chat icon at the top of the window, or press `Ctrl+Alt+I` (`Cmd+Ctrl+I` on a Mac).
+3. **Switch to Agent mode.** Use the mode drop-down in the chat box and choose **Agent**. In this mode Copilot can edit your files and run commands for you, and it asks your permission before running anything.
+4. **Ask in plain English.** For example:
+   - "Create a new branch called rewrite-chapter-one."
+   - "Add a chapter 2 called The Journey and include it in the book."
+   - "Commit my changes and open a pull request."
+   - "The PDF build failed. Can you work out why and fix it?"
+5. **Read before you approve.** Check what Copilot proposes to do, and click **Allow** or **Continue** only if it looks right. Your history is saved, so any change can be undone.
+
+Copilot already knows about your book: `.github/copilot-instructions.md` tells it how this project is set up.
+
 ## Where things live
 
 | What                     | Where                                             |
@@ -11,14 +37,7 @@ Welcome! This folder holds your book. You write in plain text files, and a PDF i
 | Pictures and figures     | `assets/images/` and `assets/figures/`            |
 | Title, author, settings  | `book.toml` (and the top of `main.typ`)           |
 
-## Start writing
-
-1. **Open this folder in an editor.** [Visual Studio Code](https://code.visualstudio.com/) is recommended. It will offer to install the suggested "Tinymist" extension. Say yes: it shows a live preview of your book and tidies your text each time you save.
-2. **Set your name.** Open `main.typ` and change `book-author` near the top (also in `book.toml`).
-3. **Write your first chapter.** Open `chapters/chapter01.typ` and replace the sample text with your own.
-4. **Add more chapters to the book.** The first chapter is already included. For each new chapter, copy `chapter01.typ` to `chapter02.typ`, and so on, and add a matching `#include` line in `main.typ`.
-
-### Quick formatting guide
+## Quick formatting guide
 
 Your files use a simple language called [Typst](https://typst.app/docs/tutorial/):
 
@@ -96,28 +115,6 @@ After merging, return to the main copy and download the update:
 git switch main
 git pull
 ```
-
-## Is my book on GitHub yet?
-
-The workflow above needs your book stored on GitHub. If you have not done this, run `write remote add github` from this folder and follow the prompts.
-
-## Let an AI assistant do the admin
-
-You don't have to memorise any of the commands above. AI assistants are very good at the "admin" side of writing: creating branches, committing, opening pull requests, adding a new chapter, fixing a build error, or explaining what a message means. Your writing stays yours; the assistant just handles the fiddly bits.
-
-To get started with GitHub Copilot in VS Code:
-
-1. **Get Copilot.** Sign in to GitHub in VS Code (click the person icon at the bottom of the left sidebar). The [free plan](https://github.com/features/copilot) is enough to begin with.
-2. **Open Copilot Chat.** Click the chat icon at the top of the window, or press `Ctrl+Alt+I` (`Cmd+Ctrl+I` on a Mac).
-3. **Switch to Agent mode.** Use the mode drop-down in the chat box and choose **Agent**. In this mode Copilot can edit your files and run commands for you, and it asks your permission before running anything.
-4. **Ask in plain English.** For example:
-   - "Create a new branch called rewrite-chapter-one."
-   - "Add a chapter 2 called The Journey and include it in the book."
-   - "Commit my changes and open a pull request."
-   - "The PDF build failed. Can you work out why and fix it?"
-5. **Read before you approve.** Check what Copilot proposes to do, and click **Allow** or **Continue** only if it looks right. Your history is saved, so any change can be undone.
-
-Copilot already knows about your book: `.github/copilot-instructions.md` tells it how this project is set up.
 
 ## Getting help
 
