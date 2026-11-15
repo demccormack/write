@@ -49,6 +49,36 @@ describe('setupGitRepo', () => {
     );
   });
 
+  test('saves only the local name without an email, then resumes with an initial commit', async () => {
+    assert.deepStrictEqual(
+      await setupGitRepo(exec, dir, { name: identity.name, email: '' }),
+      { committed: false },
+    );
+    assert.strictEqual(
+      (
+        await exec('git', ['config', '--local', '--get', 'user.name'], {
+          cwd: dir,
+        })
+      ).stdout.trim(),
+      identity.name,
+    );
+    assert.strictEqual(
+      (
+        await exec('git', ['config', '--local', '--get', 'user.email'], {
+          cwd: dir,
+        })
+      ).code,
+      1,
+    );
+    assert.notStrictEqual(
+      (await exec('git', ['rev-parse', '--verify', 'HEAD'], { cwd: dir })).code,
+      0,
+    );
+    assert.deepStrictEqual(await setupGitRepo(exec, dir, identity), {
+      committed: true,
+    });
+  });
+
   test('creates its own repo inside a parent repository', async () => {
     await exec('git', ['init'], { cwd: dir });
     const child = join(dir, 'book');

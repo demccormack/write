@@ -48,7 +48,7 @@ export async function getLocalGitIdentity(
 }
 
 /**
- * Idempotently make `cwd` its own Git repository with an initial commit.
+ * Idempotently make `cwd` its own Git repository, committing only with an email.
  * Safe to re-run after fixing whatever made it fail.
  */
 export async function setupGitRepo(
@@ -81,9 +81,9 @@ export async function setupGitRepo(
   }
 
   if (identity) {
-    if (!identity.name.trim() || !identity.email.trim()) {
+    if (!identity.name.trim()) {
       throw new GitSetupError(
-        'A project-specific Git name and email address are required before the initial commit.',
+        'A project-specific Git author name is required.',
       );
     }
     const name = await git('config', '--local', 'user.name', identity.name);
@@ -91,6 +91,9 @@ export async function setupGitRepo(
       throw new GitSetupError(
         `Could not set local Git name: ${name.stderr.trim()}`,
       );
+    }
+    if (!identity.email.trim()) {
+      return { committed: false };
     }
     const email = await git('config', '--local', 'user.email', identity.email);
     if (email.code !== 0) {

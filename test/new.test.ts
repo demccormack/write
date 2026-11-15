@@ -230,6 +230,61 @@ describe('write-cli new command', () => {
     assert(!(await isDirectory(gitDir('without-git'))));
   });
 
+  test('should create the full project with only a local Git name when email is omitted or blank', async () => {
+    for (const [index, email] of [undefined, '', '   '].entries()) {
+      const title = `Deferred Email ${index}`;
+      const projectPath = join(TEST_PATH, `deferred-email-${index}`);
+      const result = await runCreateNewProject(title, TEST_PATH, {
+        author: 'Peter Pan',
+        email,
+      });
+
+      assert.strictEqual(result.code, 0);
+      assert.strictEqual(result.stderr, '');
+      assert.ok(result.stdout.includes('no commit was made'));
+      assert.ok(result.stdout.includes('write-cli setup'));
+      assert.ok(!result.stdout.includes('Optional: write-cli remote'));
+      assert.ok(
+        (await readFile(join(projectPath, 'main.typ'), 'utf8')).includes(
+          '#let book-author = "Peter Pan"',
+        ),
+      );
+      assert.ok(
+        (await readFile(join(projectPath, 'book.toml'), 'utf8')).includes(
+          'author = "Peter Pan"',
+        ),
+      );
+      for (const file of [
+        '.gitignore',
+        'README.md',
+        'chapters/chapter01.typ',
+        '.github/workflows/build.yml',
+        '.github/workflows/lint.yml',
+        '.github/copilot-instructions.md',
+        '.vscode/settings.json',
+        '.vscode/extensions.json',
+      ]) {
+        assert.ok((await stat(join(projectPath, file))).isFile());
+      }
+
+      const git = (...args: string[]) =>
+        exec('git', args, { cwd: projectPath });
+      assert.strictEqual(
+        (await git('config', '--local', '--get', 'user.name')).stdout.trim(),
+        'Peter Pan',
+      );
+      assert.strictEqual(
+        (await git('config', '--local', '--get', 'user.email')).code,
+        1,
+      );
+      assert.notStrictEqual(
+        (await git('rev-parse', '--verify', 'HEAD')).code,
+        0,
+      );
+      assert.strictEqual((await git('ls-files')).stdout, '');
+    }
+  });
+
   test('should substitute title in main.typ', async () => {
     const projectTitle = 'Title Substitution Test';
     const projectName = 'title-substitution-test';

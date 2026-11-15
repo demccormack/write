@@ -42,6 +42,11 @@ export async function runSetup(
         prompt.close();
       }
     }
+    if (projectIdentity && !projectIdentity.email.trim()) {
+      throw new GitSetupError(
+        'An email address is required to finish Git setup. Run "write-cli setup" again when you have your GitHub noreply email.',
+      );
+    }
     const { committed } = await setupGitRepo(exec, cwd, projectIdentity);
     console.log(
       committed

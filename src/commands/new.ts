@@ -2,7 +2,7 @@ import { mkdir, writeFile, readFile, copyFile } from 'fs/promises';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { version } from './version.ts';
-import { GitSetupError, setupGitRepo, type GitIdentity } from '../git.ts';
+import { GitSetupError, setupGitRepo } from '../git.ts';
 import { exec } from '../github/gh.ts';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -78,6 +78,7 @@ export async function createNewProject(
 ): Promise<void> {
   const projectName = titleToDirectoryName(title);
   const projectPath = join(process.cwd(), projectName);
+  const gitEmail = email?.trim() ?? '';
 
   console.log(`Creating new Typst book project: ${title}`);
   console.log(`Project directory: ${projectName}`);
@@ -173,11 +174,17 @@ export async function createNewProject(
 
     if (git) {
       try {
-        const identity: GitIdentity | undefined = email
-          ? { name: author, email }
-          : undefined;
-        await setupGitRepo(exec, projectPath, identity);
-        console.log('✓ Initialised Git repository with an initial commit');
+        const { committed } = await setupGitRepo(exec, projectPath, {
+          name: author,
+          email: gitEmail,
+        });
+        console.log(
+          committed
+            ? '✓ Initialised Git repository with an initial commit'
+            : gitEmail
+              ? '✓ Git repository already set up'
+              : '✓ Initialised Git repository with your author name; no email was set and no commit was made',
+        );
       } catch (error) {
         if (!(error instanceof GitSetupError)) throw error;
         console.error('');
@@ -196,9 +203,9 @@ export async function createNewProject(
     console.log('  # Edit main.typ to start writing your book');
     console.log('  # Add chapters in the chapters/ directory');
     console.log(
-      git
+      git && gitEmail
         ? '  # Optional: write-cli remote add github'
-        : '  # Run "write-cli setup" when you want Git version history',
+        : '  # Run "write-cli setup" when you are ready to create your first commit',
     );
   } catch (error) {
     console.error(`Error creating project: ${error}`);

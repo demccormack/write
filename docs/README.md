@@ -101,7 +101,7 @@ my-amazing-book
 - **Mission control** - see every change you've made and when, review suggestions from editors or friends, and check that your book still builds correctly.
 - **Publishing HQ** - every time you push your work, GitHub builds a fresh PDF you can download and share.
 
-Before the first commit, `write-cli new` asks for your book author or pen name and a Git email. Use the private `noreply` address shown in your [GitHub email settings](https://github.com/settings/emails); it is stored only in this project's local Git config and is not added to book files. If you do not have a GitHub account yet, create the project without Git using `--no-git`, create the account, then run `write-cli setup` from the project directory.
+Before the first commit, `write-cli new` asks for your book author or pen name and a Git email. Use the private `noreply` address shown in your [GitHub email settings](https://github.com/settings/emails); it is stored only in this project's local Git config and is not added to book files. If you do not have a GitHub account yet, you can run `write-cli setup` from the project directory to finish the setup later.
 
 In GitHub's email settings, enable **Keep my email addresses private** and **Block command line pushes that expose my email address**. Then install the [GitHub CLI](https://cli.github.com/) and, from inside your book's folder, run:
 

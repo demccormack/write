@@ -67,7 +67,7 @@ switch (command) {
         author ||= await prompt.ask('Book author name or pen name');
         if (git && !email) {
           console.log(
-            'For privacy, use the GitHub noreply address after enabling both email privacy settings. If you do not have an account yet, rerun with --no-git and use "write-cli setup" after creating one.',
+            'For privacy, use the GitHub noreply address after enabling both email privacy settings. Leave this blank to create your project without an initial commit, then run "write-cli setup" when you have an email ready.',
           );
           email = await prompt.ask(
             'GitHub noreply email (enable email privacy at https://github.com/settings/emails)',
@@ -77,9 +77,9 @@ switch (command) {
         prompt.close();
       }
     }
-    if (git && (!author || !email)) {
+    if (git && !author) {
       console.error(
-        'Error: Git setup requires --author and --email when running non-interactively. Use your GitHub noreply email, or pass --no-git and run "write-cli setup" later.',
+        'Error: Git setup requires --author when running non-interactively. Provide an author name, or pass --no-git to skip Git setup.',
       );
       process.exit(1);
     }
