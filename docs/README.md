@@ -34,7 +34,7 @@ Then:
 5. If I do not have a GitHub account, help me create one. Before the first
    commit, help me enable GitHub email privacy and use my GitHub noreply email
    with `write-cli`.
-6. Help me set up cloud backup for my book.
+6. Help me set up cloud backup for my book on Github using the `write-cli` command.
 7. Show me where to write my words, how to save my progress, and how to
    get my PDF.
 
