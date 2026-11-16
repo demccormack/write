@@ -410,7 +410,10 @@ describe('write-cli new command', () => {
       join(projectPath, '.github', 'workflows', 'build.yml'),
       'utf8',
     );
-    assert.match(workflow, /push:\n {4}branches: \[main\]/);
+    assert.match(
+      workflow,
+      /push:\n {4}branches: \[main\]\n {4}tags: \['v\*'\]/,
+    );
     assert.match(workflow, /pull_request:\n {2}workflow_dispatch:/);
     assert.ok(workflow.includes("if: startsWith(github.ref, 'refs/tags/')"));
     assert.ok(workflow.includes('files: ${{ steps.pdf.outputs.filename }}'));
