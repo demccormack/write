@@ -112,6 +112,8 @@ write-cli remote add github   # or: write-cli remote add gh
 
 The command creates a private home for your book (you choose the name and whether it's public), uploads everything, and turns on sensible protections, such as checking that your book builds before changes are accepted. It's safe to run again if anything goes wrong part-way. Advanced options: `--name`, `--owner`, `--public`/`--private`, `--description`, `-y` (accept defaults).
 
+The first push to `main` builds your PDF and publishes it as an asset on the `v0.0.1` release. Find it under **Releases** on your book's GitHub page. For email notifications, choose **Watch → Custom → Releases** on that repository and enable email delivery in your [notification settings](https://github.com/settings/notifications). Email delivery depends on your GitHub settings; the PDF is a download link, not an email attachment. Later pushes to `main` still build downloadable Actions artifacts; pushing a tag beginning with `v` also publishes a PDF release.
+
 ## Roadmap Features
 
 > ⚠️ **Note**: This tool is in early development. The following features are planned:

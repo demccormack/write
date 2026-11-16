@@ -401,6 +401,37 @@ describe('write-cli new command', () => {
     assert.strictEqual(commit.stdout.trim(), `${author} <${email}>`);
   });
 
+  test('should create a PDF release workflow for the initial push and version tags', async () => {
+    const projectName = 'initial-release-book';
+    const projectPath = join(TEST_PATH, projectName);
+    await runCreateNewProject('Initial Release Book', TEST_PATH);
+
+    const workflow = await readFile(
+      join(projectPath, '.github', 'workflows', 'build.yml'),
+      'utf8',
+    );
+    assert.match(
+      workflow,
+      /push:\n {4}branches: \[main\]\n {4}tags: \['v\*'\]/,
+    );
+    assert.match(workflow, /pull_request:\n {2}workflow_dispatch:/);
+    assert.match(
+      workflow,
+      /if: >-\s+github\.event_name == 'push' &&\s+\(startsWith\(github\.ref, 'refs\/tags\/'\) \|\|\s+\(github\.ref == 'refs\/heads\/main' &&\s+github\.event\.before == '0{40}'\)\)/,
+    );
+    assert.ok(
+      workflow.includes(
+        "tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v0.0.1' }}",
+      ),
+    );
+    assert.ok(workflow.includes('target_commitish: ${{ github.sha }}'));
+    assert.ok(
+      workflow.includes(`files: '${projectName}-\${{ github.sha }}.pdf'`),
+    );
+    assert.ok(workflow.includes('contents: write'));
+    assert.ok(workflow.includes('uses: softprops/action-gh-release@v3'));
+  });
+
   test('should create templated automation files', async () => {
     const projectTitle = 'Automation Test Book';
     const projectName = 'automation-test-book';
