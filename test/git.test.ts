@@ -5,6 +5,7 @@ import { tmpdir } from 'os';
 import { join } from 'path';
 import { GitSetupError, setupGitRepo } from '../src/git.ts';
 import { exec, type Exec } from '../src/github/gh.ts';
+import { runSetup } from '../src/commands/setup.ts';
 
 describe('setupGitRepo', () => {
   let dir: string;
@@ -46,6 +47,66 @@ describe('setupGitRepo', () => {
     await assert.rejects(
       setupGitRepo(exec, dir),
       /project-specific author name and email/,
+    );
+  });
+
+  test('setup tags the initial commit and preserves the tag on later runs', async () => {
+    assert.strictEqual(await runSetup(dir, identity), 0);
+    const initial = (
+      await exec('git', ['rev-parse', 'HEAD'], { cwd: dir })
+    ).stdout.trim();
+    assert.strictEqual(
+      (
+        await exec('git', ['rev-parse', 'refs/tags/v0.0.1'], { cwd: dir })
+      ).stdout.trim(),
+      initial,
+    );
+    await writeFile(join(dir, 'book.toml'), 'updated');
+    await exec('git', ['commit', '-am', 'Update book'], { cwd: dir });
+    assert.strictEqual(await runSetup(dir), 0);
+    assert.strictEqual(
+      (
+        await exec('git', ['rev-parse', 'refs/tags/v0.0.1'], { cwd: dir })
+      ).stdout.trim(),
+      initial,
+    );
+  });
+
+  test('resumes after a failed tag without creating another commit', async () => {
+    const failTag: Exec = (command, args, options) =>
+      args[0] === 'tag'
+        ? Promise.resolve({ code: 1, stdout: '', stderr: 'tag failed' })
+        : exec(command, args, options);
+    await assert.rejects(
+      setupGitRepo(failTag, dir, identity),
+      /Initial tag failed: tag failed/,
+    );
+    assert.deepStrictEqual(await setupGitRepo(exec, dir), { committed: false });
+    assert.strictEqual(
+      (
+        await exec('git', ['rev-list', '--count', 'HEAD'], { cwd: dir })
+      ).stdout.trim(),
+      '1',
+    );
+    assert.strictEqual(
+      (await exec('git', ['rev-parse', 'refs/tags/v0.0.1'], { cwd: dir }))
+        .stdout,
+      (await exec('git', ['rev-parse', 'HEAD'], { cwd: dir })).stdout,
+    );
+  });
+
+  test('adds a missing tag to the initial commit in an existing history', async () => {
+    await setupGitRepo(exec, dir, identity);
+    const initial = (await exec('git', ['rev-parse', 'HEAD'], { cwd: dir }))
+      .stdout;
+    await exec('git', ['tag', '-d', 'v0.0.1'], { cwd: dir });
+    await writeFile(join(dir, 'book.toml'), 'updated');
+    await exec('git', ['commit', '-am', 'Update book'], { cwd: dir });
+    await setupGitRepo(exec, dir);
+    assert.strictEqual(
+      (await exec('git', ['rev-parse', 'refs/tags/v0.0.1'], { cwd: dir }))
+        .stdout,
+      initial,
     );
   });
 

@@ -54,16 +54,6 @@ A blank line starts a new paragraph.
 
 ## What you get
 
-### Your first PDF
-
-The first upload to `main` builds your PDF and publishes a release called `v0.0.1`. Open **Releases** on your book's GitHub page and download the PDF under **Assets**.
-
-To receive release emails, choose **Watch → Custom → Releases** on the repository and enable email delivery in your [GitHub notification settings](https://github.com/settings/notifications). Delivery depends on your settings; the email links to the release rather than attaching the PDF. If no email arrives, you can still download the PDF from **Releases**, or from the build in the **Actions** tab.
-
-Later uploads to `main` build PDFs in **Actions** without creating another release. Pushing a version tag beginning with `v` creates another PDF release.
-
-### Included features
-
 - **A ready-made book layout**: title page, copyright page, table of contents and numbered headings.
 - **Automatic PDFs**: every time you propose a change, GitHub builds a PDF of your book and emails you a link.
 - **Complete history**: every saved change is kept, so you can always go back.

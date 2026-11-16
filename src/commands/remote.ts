@@ -12,7 +12,7 @@ import {
   listOrgs,
   repoExists,
 } from '../github/gh.ts';
-import { isOwnRepo } from '../git.ts';
+import { INITIAL_TAG, isOwnRepo } from '../git.ts';
 
 export interface Prompter {
   ask(question: string, defaultValue?: string): Promise<string>;
@@ -265,7 +265,16 @@ export async function remoteAddGithub(
     }
 
     // Never force: a rejected push means the remote has history we must keep
-    const push = await git('push', '-u', 'origin', branch);
+    const tagRef = `refs/tags/${INITIAL_TAG}`;
+    const hasInitialTag =
+      (await git('rev-parse', '--verify', tagRef)).code === 0;
+    const push = await git(
+      'push',
+      '-u',
+      'origin',
+      branch,
+      ...(hasInitialTag ? [tagRef] : []),
+    );
     if (push.code !== 0) {
       throw new FatalError(
         `Push failed (no force push is attempted): ${push.stderr.trim()}`,

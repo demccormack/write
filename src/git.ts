@@ -2,6 +2,7 @@ import { realpath } from 'node:fs/promises';
 import type { Exec } from './github/gh.ts';
 
 export const GIT_INSTALL_URL = 'https://git-scm.com/downloads';
+export const INITIAL_TAG = 'v0.0.1';
 
 /** Thrown with a user-friendly message when git setup cannot continue. */
 export class GitSetupError extends Error {}
@@ -62,6 +63,28 @@ export async function setupGitRepo(
   delete gitEnv.GIT_COMMITTER_NAME;
   delete gitEnv.GIT_COMMITTER_EMAIL;
   const git = (...args: string[]) => run('git', args, { cwd, env: gitEnv });
+  const tagInitialCommit = async () => {
+    if (
+      (await git('rev-parse', '--verify', `refs/tags/${INITIAL_TAG}`)).code ===
+      0
+    ) {
+      return;
+    }
+    const roots = await git('rev-list', '--max-parents=0', 'HEAD');
+    if (roots.code !== 0) {
+      throw new GitSetupError(
+        `Could not find initial commit: ${roots.stderr.trim()}`,
+      );
+    }
+    const tag = await git(
+      'tag',
+      INITIAL_TAG,
+      roots.stdout.trim().split('\n')[0],
+    );
+    if (tag.code !== 0) {
+      throw new GitSetupError(`Initial tag failed: ${tag.stderr.trim()}`);
+    }
+  };
 
   if ((await git('--version')).code !== 0) {
     throw new GitSetupError(
@@ -77,6 +100,7 @@ export async function setupGitRepo(
   }
 
   if ((await git('rev-parse', '--verify', 'HEAD')).code === 0) {
+    await tagInitialCommit();
     return { committed: false };
   }
 
@@ -131,5 +155,6 @@ export async function setupGitRepo(
   if (commit.code !== 0) {
     throw new GitSetupError(`Initial commit failed: ${commit.stderr.trim()}`);
   }
+  await tagInitialCommit();
   return { committed: true };
 }

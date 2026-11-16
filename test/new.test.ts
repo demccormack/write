@@ -401,35 +401,56 @@ describe('write-cli new command', () => {
     assert.strictEqual(commit.stdout.trim(), `${author} <${email}>`);
   });
 
-  test('should create a PDF release workflow for the initial push and version tags', async () => {
-    const projectName = 'initial-release-book';
+  test('should use short commit SHAs for PDFs across workflows', async () => {
+    const projectName = 'short-sha-book';
     const projectPath = join(TEST_PATH, projectName);
-    await runCreateNewProject('Initial Release Book', TEST_PATH);
+    await runCreateNewProject('Short SHA Book', TEST_PATH);
 
     const workflow = await readFile(
       join(projectPath, '.github', 'workflows', 'build.yml'),
       'utf8',
     );
-    assert.match(
-      workflow,
-      /push:\n {4}branches: \[main\]\n {4}tags: \['v\*'\]/,
-    );
+    assert.match(workflow, /push:\n {4}branches: \[main\]/);
     assert.match(workflow, /pull_request:\n {2}workflow_dispatch:/);
-    assert.match(
-      workflow,
-      /if: >-\s+github\.event_name == 'push' &&\s+\(startsWith\(github\.ref, 'refs\/tags\/'\) \|\|\s+\(github\.ref == 'refs\/heads\/main' &&\s+github\.event\.before == '0{40}'\)\)/,
-    );
-    assert.ok(
-      workflow.includes(
-        "tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v0.0.1' }}",
-      ),
-    );
-    assert.ok(workflow.includes('target_commitish: ${{ github.sha }}'));
-    assert.ok(
-      workflow.includes(`files: '${projectName}-\${{ github.sha }}.pdf'`),
-    );
-    assert.ok(workflow.includes('contents: write'));
-    assert.ok(workflow.includes('uses: softprops/action-gh-release@v3'));
+    assert.ok(workflow.includes("if: startsWith(github.ref, 'refs/tags/')"));
+    assert.ok(workflow.includes('files: ${{ steps.pdf.outputs.filename }}'));
+
+    const preview = await readFile('.github/workflows/pdf_preview.yml', 'utf8');
+    const previewName = 'fairy-dust-sprinkling-made-easy';
+    await mkdir(join(projectPath, previewName));
+    for (const [text, name, subdir] of [
+      [workflow, projectName, ''],
+      [preview, previewName, previewName],
+    ]) {
+      assert.ok(text.includes('name: ${{ steps.pdf.outputs.filename }}'));
+      assert.ok(text.includes('${{ steps.pdf.outputs.filename }}'));
+      const script = text.match(
+        /- name: Rename PDF with short commit SHA\n {8}id: pdf\n {8}run: \|\n((?: {10}.+\n)+)/,
+      )?.[1];
+      assert.ok(script, 'Workflow should expose the renamed PDF as an output');
+      await writeFile(join(projectPath, subdir, 'main.pdf'), 'sample PDF');
+      const outputPath = join(process.cwd(), projectPath, `${name}-output`);
+      const renamed = await exec('bash', ['-e', '-c', script], {
+        cwd: projectPath,
+        env: {
+          ...process.env,
+          GITHUB_SHA: '1234567890abcdef1234567890abcdef12345678',
+          GITHUB_OUTPUT: outputPath,
+        },
+      });
+      assert.strictEqual(renamed.code, 0, renamed.stderr);
+      assert.strictEqual(
+        await readFile(
+          join(projectPath, subdir, `${name}-1234567.pdf`),
+          'utf8',
+        ),
+        'sample PDF',
+      );
+      assert.strictEqual(
+        await readFile(outputPath, 'utf8'),
+        `filename=${name}-1234567.pdf\n`,
+      );
+    }
   });
 
   test('should create templated automation files', async () => {
@@ -452,12 +473,12 @@ describe('write-cli new command', () => {
     );
     assert(
       buildWorkflowContent.includes(
-        `run: mv main.pdf ${projectName}-\${{ github.sha }}.pdf`,
+        `filename="${projectName}-\${GITHUB_SHA:0:7}.pdf"`,
       ),
       'Generated build workflow should rename the PDF using the project name',
     );
     assert(
-      buildWorkflowContent.includes(`${projectName}-\${{ github.sha }}.pdf`),
+      buildWorkflowContent.includes('name: ${{ steps.pdf.outputs.filename }}'),
       'Generated build workflow should upload an artifact named for the project',
     );
     assert(

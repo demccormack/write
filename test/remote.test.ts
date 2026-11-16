@@ -88,7 +88,8 @@ describe('remote add github', () => {
           ' --private --description My Book',
       ),
     );
-    assert.ok(f.calls.includes('git push -u origin main'));
+    assert.ok(f.calls.includes('git push -u origin main refs/tags/v0.0.1'));
+    assert.ok(!f.calls.some((c) => c.includes('--tags')));
     assert.ok(f.calls.some((c) => c.includes('delete_branch_on_merge=true')));
     assert.ok(f.calls.some((c) => c.includes('actions/permissions')));
     assert.ok(
@@ -111,6 +112,15 @@ describe('remote add github', () => {
     );
     assert.strictEqual(await run(f), 0);
     assert.ok(!f.calls.some((c) => c.startsWith('gh repo create')));
+    assert.ok(f.calls.includes('git push -u origin main refs/tags/v0.0.1'));
+  });
+
+  test('preserves branch-only pushes for projects without the initial tag', async () => {
+    await exec('git', ['tag', '-d', 'v0.0.1'], { cwd: dir });
+    const f = fake(happyGh);
+    assert.strictEqual(await run(f), 0);
+    assert.ok(f.calls.includes('git push -u origin main'));
+    assert.ok(!f.calls.some((c) => c.startsWith('git tag')));
   });
 
   test('refuses a non-GitHub origin', async () => {
