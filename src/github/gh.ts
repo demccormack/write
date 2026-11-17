@@ -97,6 +97,20 @@ export async function createRepo(
   ]);
 }
 
+export async function enableActions(
+  run: Exec,
+  repo: string,
+): Promise<ExecResult> {
+  return run('gh', [
+    'api',
+    '-X',
+    'PUT',
+    `repos/${repo}/actions/permissions`,
+    '-F',
+    'enabled=true',
+  ]);
+}
+
 const RULESET_NAME = 'Require CI to pass';
 
 function failure(result: ExecResult): string {
@@ -128,18 +142,6 @@ export async function applyRepoSettings(
       `repos/${repo}`,
       '-F',
       'delete_branch_on_merge=true',
-    ]),
-  );
-
-  record(
-    'GitHub Actions enabled',
-    await run('gh', [
-      'api',
-      '-X',
-      'PUT',
-      `repos/${repo}/actions/permissions`,
-      '-F',
-      'enabled=true',
     ]),
   );
 
