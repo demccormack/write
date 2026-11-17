@@ -4,7 +4,8 @@ import { createNewProject } from './commands/new.js';
 import { runSetup } from './commands/setup.js';
 import { runRemoteAdd } from './commands/remote.js';
 import { createPrompt } from './prompt.js';
-import type { GitIdentity } from './git.js';
+import { getGitIdentity } from './git.js';
+import { exec } from './github/gh.js';
 
 const args = process.argv.slice(2);
 
@@ -61,22 +62,34 @@ switch (command) {
       );
       process.exit(1);
     }
+    author = author?.trim();
+    email = email?.trim();
+    const defaults =
+      !author || (git && !email)
+        ? await getGitIdentity(exec, process.cwd(), 'global')
+        : { name: '', email: '' };
     if ((!author || (git && !email)) && process.stdin.isTTY) {
       const prompt = createPrompt();
       try {
-        author ||= await prompt.ask('Book author name or pen name');
+        author ||= await prompt.ask(
+          'Book author name or pen name',
+          defaults.name,
+        );
         if (git && !email) {
           console.log(
-            'For privacy, use the GitHub noreply address after enabling both email privacy settings. Leave this blank to create your project without an initial commit, then run "write-cli setup" when you have an email ready.',
+            'For privacy, use your GitHub noreply address. Press Enter to use the globally configured Git email shown below, if any. If no email is available, your project will be created without an initial commit; run "write-cli setup" later to finish.',
           );
           email = await prompt.ask(
             'GitHub noreply email (enable email privacy at https://github.com/settings/emails)',
+            defaults.email,
           );
         }
       } finally {
         prompt.close();
       }
     }
+    author ||= defaults.name;
+    email ||= defaults.email;
     if (git && !author) {
       console.error(
         'Error: Git setup requires --author when running non-interactively. Provide an author name, or pass --no-git to skip Git setup.',
@@ -103,13 +116,7 @@ switch (command) {
         process.exit(1);
       }
     }
-    const identity: GitIdentity | undefined =
-      name && email ? { name, email } : undefined;
-    if ((name || email) && !identity) {
-      console.error('Error: Provide both --author and --email');
-      process.exit(1);
-    }
-    process.exit(await runSetup(process.cwd(), identity));
+    process.exit(await runSetup(process.cwd(), { name, email }));
     break;
   }
 

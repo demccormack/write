@@ -37,15 +37,23 @@ export interface GitIdentity {
   email: string;
 }
 
-export async function getLocalGitIdentity(
+export async function getGitIdentity(
   run: Exec,
   cwd: string,
-): Promise<GitIdentity | undefined> {
-  const git = (...args: string[]) => run('git', args, { cwd });
-  const name = await git('config', '--local', '--get', 'user.name');
-  const email = await git('config', '--local', '--get', 'user.email');
-  if (name.code !== 0 || email.code !== 0) return undefined;
-  return { name: name.stdout.trim(), email: email.stdout.trim() };
+  scope: 'local' | 'global',
+): Promise<GitIdentity> {
+  const read = async (key: string) => {
+    const result = await run('git', ['config', `--${scope}`, '--get', key], {
+      cwd,
+    });
+    if (result.code === 0) return result.stdout.trim();
+    // Git is optional when creating a project with --no-git.
+    if (result.code === 1 || result.code === 127) return '';
+    throw new GitSetupError(
+      `Could not read ${scope} Git ${key}: ${result.stderr.trim()}`,
+    );
+  };
+  return { name: await read('user.name'), email: await read('user.email') };
 }
 
 /**
@@ -127,7 +135,8 @@ export async function setupGitRepo(
     }
   }
 
-  if (!(await getLocalGitIdentity(run, cwd))) {
+  const localIdentity = await getGitIdentity(run, cwd, 'local');
+  if (!localIdentity.name || !localIdentity.email) {
     throw new GitSetupError(
       [
         'Git needs a project-specific author name and email before the initial commit.',
