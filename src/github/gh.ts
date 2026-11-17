@@ -97,6 +97,19 @@ export async function createRepo(
   ]);
 }
 
+export async function watchRepo(run: Exec, repo: string): Promise<ExecResult> {
+  return run('gh', [
+    'api',
+    '-X',
+    'PUT',
+    `repos/${repo}/subscription`,
+    '-F',
+    'subscribed=true',
+    '-F',
+    'ignored=false',
+  ]);
+}
+
 export async function enableActions(
   run: Exec,
   repo: string,

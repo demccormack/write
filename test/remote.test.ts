@@ -98,12 +98,17 @@ describe('remote add github', () => {
       ),
     );
     const enable = f.calls.findIndex((c) => c.includes('enabled=true'));
+    const create = f.calls.findIndex((c) => c.startsWith('gh repo create'));
+    const watch = f.calls.indexOf(
+      `gh api -X PUT repos/octo/${dir.split('/').pop()}/subscription -F subscribed=true -F ignored=false`,
+    );
     const branchPush = f.calls.indexOf('git push -u origin main');
     const workflows = f.calls.findIndex((c) =>
       c.includes('/actions/workflows?'),
     );
     const tagPush = f.calls.indexOf('git push origin refs/tags/v0.0.1');
     assert.ok(enable >= 0 && enable < branchPush);
+    assert.ok(create >= 0 && create < watch && watch < branchPush);
     assert.ok(branchPush < workflows && workflows < tagPush);
     assert.deepStrictEqual(
       f.calls.filter((c) => c.startsWith('git push')),
@@ -153,6 +158,35 @@ describe('remote add github', () => {
     assert.strictEqual(await run(f), 1);
     assert.ok(!f.calls.some((c) => c.startsWith('git push')));
     assert.ok(logs.some((l) => l.includes('403 denied')));
+  });
+
+  test('does not push until watching succeeds, including when setup is retried', async () => {
+    let subscribed = false;
+    const f = fake((args) => {
+      if (args.some((arg) => arg.endsWith('/subscription')))
+        return subscribed ? ok() : fail('403 subscription denied');
+      if (subscribed && args[0] === 'repo' && args[1] === 'view') return ok();
+      return happyGh(args);
+    });
+
+    assert.strictEqual(await run(f), 1);
+    assert.ok(!f.calls.some((c) => c.startsWith('git push')));
+    assert.ok(logs.some((l) => l.includes('403 subscription denied')));
+    assert.ok(logs.some((l) => l.includes('re-run')));
+    assert.ok(!logs.some((l) => l.includes('✓ Subscribed')));
+
+    subscribed = true;
+    assert.strictEqual(await run(f), 0);
+    assert.strictEqual(
+      f.calls.filter((c) => c.startsWith('gh repo create')).length,
+      1,
+    );
+    assert.strictEqual(
+      f.calls.filter((c) => c.includes('subscribed=true')).length,
+      2,
+    );
+    assert.ok(f.calls.includes('git push -u origin main'));
+    assert.ok(logs.some((l) => l.includes('✓ Subscribed')));
   });
 
   test('waits until all committed project workflows are registered', async () => {

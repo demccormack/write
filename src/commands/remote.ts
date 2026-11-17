@@ -13,6 +13,7 @@ import {
   getUser,
   listOrgs,
   repoExists,
+  watchRepo,
 } from '../github/gh.ts';
 import { INITIAL_TAG, isOwnRepo } from '../git.ts';
 
@@ -266,6 +267,14 @@ export async function remoteAddGithub(
       }
       log('✓ Remote origin configured');
     }
+
+    const subscription = await watchRepo(run, repo);
+    if (subscription.code !== 0) {
+      throw new FatalError(
+        `Could not subscribe you to repository notifications before pushing: ${subscription.stderr.trim()}`,
+      );
+    }
+    log('✓ Subscribed to updates about your book');
 
     const actions = await enableActions(run, repo);
     if (actions.code !== 0) {

@@ -110,7 +110,7 @@ gh auth login
 write-cli remote add github   # or: write-cli remote add gh
 ```
 
-The command creates a private home for your book (you choose the name and whether it's public), uploads everything, and turns on sensible protections, such as checking that your book builds before changes are accepted. It's safe to run again if anything goes wrong part-way. Advanced options: `--name`, `--owner`, `--public`/`--private`, `--description`, `-y` (accept defaults).
+The command creates a private home for your book (you choose the name and whether it's public), subscribes you to updates about your book, uploads everything, and turns on sensible protections, such as checking that your book builds before changes are accepted. It's safe to run again if anything goes wrong part-way. Advanced options: `--name`, `--owner`, `--public`/`--private`, `--description`, `-y` (accept defaults).
 
 ## Roadmap Features
 
