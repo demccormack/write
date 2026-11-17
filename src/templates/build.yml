@@ -92,5 +92,9 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           files: ${{ steps.pdf.outputs.filename }}
+          body: |
+            ### 📖 PDF Preview
+
+            **[Open PDF preview ↗](${{ steps.upload-pdf.outputs.artifact-url }})**
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

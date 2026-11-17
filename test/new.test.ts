@@ -550,6 +550,17 @@ describe('write-cli new command', () => {
       buildWorkflowContent.includes("if: github.event_name == 'pull_request'"),
       'Generated build workflow should only comment on pull requests',
     );
+    const releaseBody = buildWorkflowContent
+      .split('- name: Create Release (on tag)')[1]
+      ?.match(/body: \|\n([\s\S]*?)\n {8}env:/)?.[1];
+    assert.ok(releaseBody, 'Generated release should have a PDF preview body');
+    assert.ok(releaseBody.includes('### 📖 PDF Preview'));
+    assert.ok(
+      releaseBody.includes(
+        '**[Open PDF preview ↗](${{ steps.upload-pdf.outputs.artifact-url }})**',
+      ),
+      'Release preview should use the same artifact URL as the PR comment',
+    );
 
     const copilotInstructionsPath = join(
       projectPath,
