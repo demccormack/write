@@ -1,7 +1,8 @@
 import { access } from 'node:fs/promises';
 import { join } from 'node:path';
 import {
-  getLocalGitIdentity,
+  getGitIdentity,
+  isOwnRepo,
   GitSetupError,
   setupGitRepo,
   type GitIdentity,
@@ -15,7 +16,7 @@ import { createPrompt } from '../prompt.ts';
  */
 export async function runSetup(
   cwd = process.cwd(),
-  identity?: GitIdentity,
+  identity?: Partial<GitIdentity>,
 ): Promise<number> {
   try {
     await access(join(cwd, 'book.toml'));
@@ -26,22 +27,35 @@ export async function runSetup(
     return 1;
   }
   try {
-    let projectIdentity = identity ?? (await getLocalGitIdentity(exec, cwd));
-    if (!projectIdentity && process.stdin.isTTY) {
+    const local = (await isOwnRepo(exec, cwd))
+      ? await getGitIdentity(exec, cwd, 'local')
+      : { name: '', email: '' };
+    let name = identity?.name?.trim() || local.name;
+    let email = identity?.email?.trim() || local.email;
+    const defaults =
+      !name || !email
+        ? await getGitIdentity(exec, cwd, 'global')
+        : { name: '', email: '' };
+    if ((!name || !email) && process.stdin.isTTY) {
       const prompt = createPrompt();
       try {
-        const name = await prompt.ask('Git author name or pen name');
-        console.log(
-          'Use the GitHub noreply address after enabling both email privacy settings at https://github.com/settings/emails.',
-        );
-        const email = await prompt.ask(
-          'GitHub noreply email (enable email privacy at https://github.com/settings/emails)',
-        );
-        projectIdentity = { name, email };
+        name ||= await prompt.ask('Git author name or pen name', defaults.name);
+        if (!email) {
+          console.log(
+            'For privacy, use your GitHub noreply address. Press Enter to use the globally configured Git email shown below, if any.',
+          );
+          email = await prompt.ask(
+            'GitHub noreply email (enable email privacy at https://github.com/settings/emails)',
+            defaults.email,
+          );
+        }
       } finally {
         prompt.close();
       }
     }
+    name ||= defaults.name;
+    email ||= defaults.email;
+    const projectIdentity = name ? { name, email } : undefined;
     if (projectIdentity && !projectIdentity.email.trim()) {
       throw new GitSetupError(
         'An email address is required to finish Git setup. Run "write-cli setup" again when you have your GitHub noreply email.',

@@ -27,13 +27,14 @@ interface Fake {
 /** Real git (with push faked); gh handled by `gh` override. */
 function fake(
   gh: (args: string[]) => ExecResult | undefined,
-  pushResult: ExecResult = ok(),
+  pushResult: ExecResult | ((args: string[]) => ExecResult) = ok(),
 ): Fake {
   const calls: string[] = [];
   const run: Exec = async (command, args, options) => {
     calls.push(`${command} ${args.join(' ')}`);
     if (command === 'gh') return gh(args) ?? ok();
-    if (command === 'git' && args[0] === 'push') return pushResult;
+    if (command === 'git' && args[0] === 'push')
+      return typeof pushResult === 'function' ? pushResult(args) : pushResult;
     return exec(command, args, options);
   };
   return { calls, run };
@@ -43,6 +44,8 @@ const happyGh = (args: string[]) => {
   const cmd = args.slice(0, 2).join(' ');
   if (cmd === 'api user') return ok('octo\n');
   if (cmd === 'repo view') return fail('not found');
+  if (args.some((arg) => arg.includes('/actions/workflows?')))
+    return ok('.github/workflows/build.yml\n');
   if (args[1]?.endsWith('/rulesets') && args[0] === 'api' && args.length === 4)
     return ok('');
   return undefined;
@@ -55,7 +58,13 @@ describe('remote add github', () => {
   const run = (f: Fake, options = {}) =>
     remoteAddGithub(
       { yes: true, ...options },
-      { run: f.run, prompt: defaultsPrompter, cwd: dir, log },
+      {
+        run: f.run,
+        prompt: defaultsPrompter,
+        cwd: dir,
+        log,
+        wait: async () => {},
+      },
     );
 
   beforeEach(async () => {
@@ -88,7 +97,24 @@ describe('remote add github', () => {
           ' --private --description My Book',
       ),
     );
-    assert.ok(f.calls.includes('git push -u origin main'));
+    const enable = f.calls.findIndex((c) => c.includes('enabled=true'));
+    const create = f.calls.findIndex((c) => c.startsWith('gh repo create'));
+    const watch = f.calls.indexOf(
+      `gh api -X PUT repos/octo/${dir.split('/').pop()}/subscription -F subscribed=true -F ignored=false`,
+    );
+    const branchPush = f.calls.indexOf('git push -u origin main');
+    const workflows = f.calls.findIndex((c) =>
+      c.includes('/actions/workflows?'),
+    );
+    const tagPush = f.calls.indexOf('git push origin refs/tags/v0.0.1');
+    assert.ok(enable >= 0 && enable < branchPush);
+    assert.ok(create >= 0 && create < watch && watch < branchPush);
+    assert.ok(branchPush < workflows && workflows < tagPush);
+    assert.deepStrictEqual(
+      f.calls.filter((c) => c.startsWith('git push')),
+      ['git push -u origin main', 'git push origin refs/tags/v0.0.1'],
+    );
+    assert.ok(!f.calls.some((c) => c.includes('--tags')));
     assert.ok(f.calls.some((c) => c.includes('delete_branch_on_merge=true')));
     assert.ok(f.calls.some((c) => c.includes('actions/permissions')));
     assert.ok(
@@ -111,6 +137,131 @@ describe('remote add github', () => {
     );
     assert.strictEqual(await run(f), 0);
     assert.ok(!f.calls.some((c) => c.startsWith('gh repo create')));
+    assert.ok(f.calls.includes('git push -u origin main'));
+    assert.ok(f.calls.includes('git push origin refs/tags/v0.0.1'));
+  });
+
+  test('preserves branch-only pushes for projects without the initial tag', async () => {
+    await exec('git', ['tag', '-d', 'v0.0.1'], { cwd: dir });
+    const f = fake(happyGh);
+    assert.strictEqual(await run(f), 0);
+    assert.ok(f.calls.includes('git push -u origin main'));
+    assert.ok(!f.calls.some((c) => c.startsWith('git tag')));
+    assert.ok(!f.calls.some((c) => c.includes('/actions/workflows?')));
+    assert.ok(!f.calls.includes('git push origin refs/tags/v0.0.1'));
+  });
+
+  test('does not push when Actions cannot be enabled', async () => {
+    const f = fake((args) =>
+      args.includes('enabled=true') ? fail('403 denied') : happyGh(args),
+    );
+    assert.strictEqual(await run(f), 1);
+    assert.ok(!f.calls.some((c) => c.startsWith('git push')));
+    assert.ok(logs.some((l) => l.includes('403 denied')));
+  });
+
+  test('does not push until watching succeeds, including when setup is retried', async () => {
+    let subscribed = false;
+    const f = fake((args) => {
+      if (args.some((arg) => arg.endsWith('/subscription')))
+        return subscribed ? ok() : fail('403 subscription denied');
+      if (subscribed && args[0] === 'repo' && args[1] === 'view') return ok();
+      return happyGh(args);
+    });
+
+    assert.strictEqual(await run(f), 1);
+    assert.ok(!f.calls.some((c) => c.startsWith('git push')));
+    assert.ok(logs.some((l) => l.includes('403 subscription denied')));
+    assert.ok(logs.some((l) => l.includes('re-run')));
+    assert.ok(!logs.some((l) => l.includes('✓ Subscribed')));
+
+    subscribed = true;
+    assert.strictEqual(await run(f), 0);
+    assert.strictEqual(
+      f.calls.filter((c) => c.startsWith('gh repo create')).length,
+      1,
+    );
+    assert.strictEqual(
+      f.calls.filter((c) => c.includes('subscribed=true')).length,
+      2,
+    );
+    assert.ok(f.calls.includes('git push -u origin main'));
+    assert.ok(logs.some((l) => l.includes('✓ Subscribed')));
+  });
+
+  test('waits until all committed project workflows are registered', async () => {
+    await writeFile(
+      join(dir, '.github', 'workflows', 'lint.yml'),
+      'name: Lint\non: push\njobs:\n  lint:\n    runs-on: x\n',
+    );
+    await exec('git', ['add', '.github/workflows/lint.yml'], { cwd: dir });
+    const commit = await exec('git', ['commit', '-m', 'Add lint workflow'], {
+      cwd: dir,
+    });
+    assert.strictEqual(commit.code, 0, commit.stderr);
+
+    let checks = 0;
+    const f = fake((args) => {
+      if (args.some((arg) => arg.includes('/actions/workflows?'))) {
+        checks++;
+        if (checks === 1) return ok('.github/workflows/unrelated.yml\n');
+        if (checks === 2) return ok('.github/workflows/build.yml\n');
+        return ok('.github/workflows/build.yml\n.github/workflows/lint.yml\n');
+      }
+      return happyGh(args);
+    });
+    assert.strictEqual(await run(f), 0);
+    assert.strictEqual(checks, 3);
+    assert.ok(f.calls.includes('git push origin refs/tags/v0.0.1'));
+  });
+
+  test('leaves the tag unpushed on registration timeout and resumes safely', async () => {
+    let ready = false;
+    let checks = 0;
+    const f = fake((args) => {
+      if (args.some((arg) => arg.includes('/actions/workflows?'))) {
+        checks++;
+        return ready ? happyGh(args) : ok('');
+      }
+      if (ready && args[0] === 'repo' && args[1] === 'view') return ok();
+      return happyGh(args);
+    });
+    assert.strictEqual(await run(f), 1);
+    assert.strictEqual(checks, 30);
+    assert.ok(f.calls.includes('git push -u origin main'));
+    assert.ok(!f.calls.includes('git push origin refs/tags/v0.0.1'));
+    assert.ok(logs.some((l) => l.includes('initial tag was not')));
+
+    ready = true;
+    assert.strictEqual(await run(f), 0);
+    assert.strictEqual(
+      f.calls.filter((c) => c.startsWith('gh repo create')).length,
+      1,
+    );
+    assert.ok(f.calls.includes('git push origin refs/tags/v0.0.1'));
+    assert.ok(!f.calls.some((c) => c.includes('--force')));
+  });
+
+  test('reports registration API failures without pushing the tag', async () => {
+    const f = fake((args) =>
+      args.some((arg) => arg.includes('/actions/workflows?'))
+        ? fail('403 forbidden')
+        : happyGh(args),
+    );
+    assert.strictEqual(await run(f), 1);
+    assert.ok(!f.calls.includes('git push origin refs/tags/v0.0.1'));
+    assert.ok(logs.some((l) => l.includes('403 forbidden')));
+  });
+
+  test('reports a separate tag push failure without force-pushing', async () => {
+    const f = fake(happyGh, (args) =>
+      args.includes('refs/tags/v0.0.1') ? fail('tag rejected') : ok(),
+    );
+    assert.strictEqual(await run(f), 1);
+    assert.ok(f.calls.includes('git push -u origin main'));
+    assert.ok(logs.some((l) => l.includes('tag rejected')));
+    assert.ok(logs.some((l) => l.includes('re-run')));
+    assert.ok(!f.calls.some((c) => c.includes('--force')));
   });
 
   test('refuses a non-GitHub origin', async () => {

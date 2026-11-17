@@ -2,6 +2,7 @@ import { realpath } from 'node:fs/promises';
 import type { Exec } from './github/gh.ts';
 
 export const GIT_INSTALL_URL = 'https://git-scm.com/downloads';
+export const INITIAL_TAG = 'v0.0.1';
 
 /** Thrown with a user-friendly message when git setup cannot continue. */
 export class GitSetupError extends Error {}
@@ -36,15 +37,23 @@ export interface GitIdentity {
   email: string;
 }
 
-export async function getLocalGitIdentity(
+export async function getGitIdentity(
   run: Exec,
   cwd: string,
-): Promise<GitIdentity | undefined> {
-  const git = (...args: string[]) => run('git', args, { cwd });
-  const name = await git('config', '--local', '--get', 'user.name');
-  const email = await git('config', '--local', '--get', 'user.email');
-  if (name.code !== 0 || email.code !== 0) return undefined;
-  return { name: name.stdout.trim(), email: email.stdout.trim() };
+  scope: 'local' | 'global',
+): Promise<GitIdentity> {
+  const read = async (key: string) => {
+    const result = await run('git', ['config', `--${scope}`, '--get', key], {
+      cwd,
+    });
+    if (result.code === 0) return result.stdout.trim();
+    // Git is optional when creating a project with --no-git.
+    if (result.code === 1 || result.code === 127) return '';
+    throw new GitSetupError(
+      `Could not read ${scope} Git ${key}: ${result.stderr.trim()}`,
+    );
+  };
+  return { name: await read('user.name'), email: await read('user.email') };
 }
 
 /**
@@ -62,6 +71,28 @@ export async function setupGitRepo(
   delete gitEnv.GIT_COMMITTER_NAME;
   delete gitEnv.GIT_COMMITTER_EMAIL;
   const git = (...args: string[]) => run('git', args, { cwd, env: gitEnv });
+  const tagInitialCommit = async () => {
+    if (
+      (await git('rev-parse', '--verify', `refs/tags/${INITIAL_TAG}`)).code ===
+      0
+    ) {
+      return;
+    }
+    const roots = await git('rev-list', '--max-parents=0', 'HEAD');
+    if (roots.code !== 0) {
+      throw new GitSetupError(
+        `Could not find initial commit: ${roots.stderr.trim()}`,
+      );
+    }
+    const tag = await git(
+      'tag',
+      INITIAL_TAG,
+      roots.stdout.trim().split('\n')[0],
+    );
+    if (tag.code !== 0) {
+      throw new GitSetupError(`Initial tag failed: ${tag.stderr.trim()}`);
+    }
+  };
 
   if ((await git('--version')).code !== 0) {
     throw new GitSetupError(
@@ -77,6 +108,7 @@ export async function setupGitRepo(
   }
 
   if ((await git('rev-parse', '--verify', 'HEAD')).code === 0) {
+    await tagInitialCommit();
     return { committed: false };
   }
 
@@ -103,7 +135,8 @@ export async function setupGitRepo(
     }
   }
 
-  if (!(await getLocalGitIdentity(run, cwd))) {
+  const localIdentity = await getGitIdentity(run, cwd, 'local');
+  if (!localIdentity.name || !localIdentity.email) {
     throw new GitSetupError(
       [
         'Git needs a project-specific author name and email before the initial commit.',
@@ -131,5 +164,6 @@ export async function setupGitRepo(
   if (commit.code !== 0) {
     throw new GitSetupError(`Initial commit failed: ${commit.stderr.trim()}`);
   }
+  await tagInitialCommit();
   return { committed: true };
 }

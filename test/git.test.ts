@@ -5,6 +5,7 @@ import { tmpdir } from 'os';
 import { join } from 'path';
 import { GitSetupError, setupGitRepo } from '../src/git.ts';
 import { exec, type Exec } from '../src/github/gh.ts';
+import { runSetup } from '../src/commands/setup.ts';
 
 describe('setupGitRepo', () => {
   let dir: string;
@@ -13,6 +14,9 @@ describe('setupGitRepo', () => {
 
   beforeEach(async () => {
     dir = await realpath(await mkdtemp(join(tmpdir(), 'write-git-')));
+    process.env.GIT_CONFIG_GLOBAL = join(dir, 'test.gitconfig');
+    process.env.GIT_CONFIG_NOSYSTEM = '1';
+    await writeFile(process.env.GIT_CONFIG_GLOBAL, '');
     await writeFile(join(dir, 'book.toml'), 'x');
     await writeFile(join(dir, '.env'), 'SECRET=1');
     process.env.GIT_AUTHOR_NAME = process.env.GIT_COMMITTER_NAME = 'Test';
@@ -46,6 +50,113 @@ describe('setupGitRepo', () => {
     await assert.rejects(
       setupGitRepo(exec, dir),
       /project-specific author name and email/,
+    );
+  });
+
+  test('setup tags the initial commit and preserves the tag on later runs', async () => {
+    assert.strictEqual(await runSetup(dir, identity), 0);
+    const initial = (
+      await exec('git', ['rev-parse', 'HEAD'], { cwd: dir })
+    ).stdout.trim();
+    assert.strictEqual(
+      (
+        await exec('git', ['rev-parse', 'refs/tags/v0.0.1'], { cwd: dir })
+      ).stdout.trim(),
+      initial,
+    );
+    await writeFile(join(dir, 'book.toml'), 'updated');
+    await exec('git', ['commit', '-am', 'Update book'], { cwd: dir });
+    assert.strictEqual(await runSetup(dir), 0);
+    assert.strictEqual(
+      (
+        await exec('git', ['rev-parse', 'refs/tags/v0.0.1'], { cwd: dir })
+      ).stdout.trim(),
+      initial,
+    );
+  });
+
+  test('setup keeps the saved local name and falls back to the global email', async () => {
+    const config =
+      '[user]\nname = Global Pen Name\nemail = global@example.com\n';
+    await writeFile(join(dir, 'test.gitconfig'), config);
+    await setupGitRepo(exec, dir, { name: 'Local Pen Name', email: '' });
+
+    assert.strictEqual(await runSetup(dir, { email: '   ' }), 0);
+    const localName = await exec(
+      'git',
+      ['config', '--local', '--get', 'user.name'],
+      { cwd: dir },
+    );
+    const localEmail = await exec(
+      'git',
+      ['config', '--local', '--get', 'user.email'],
+      { cwd: dir },
+    );
+    assert.strictEqual(localName.stdout.trim(), 'Local Pen Name');
+    assert.strictEqual(localEmail.stdout.trim(), 'global@example.com');
+    assert.strictEqual(
+      (
+        await exec('git', ['config', '--global', '--get', 'user.name'], {
+          cwd: dir,
+        })
+      ).stdout.trim(),
+      'Global Pen Name',
+    );
+  });
+
+  test('setup uses the global name without replacing an explicit email', async () => {
+    await writeFile(
+      join(dir, 'test.gitconfig'),
+      '[user]\nname = Global Pen Name\nemail = global@example.com\n',
+    );
+    assert.strictEqual(
+      await runSetup(dir, { email: 'explicit@example.com' }),
+      0,
+    );
+    const commit = await exec('git', ['log', '-1', '--format=%an <%ae>'], {
+      cwd: dir,
+    });
+    assert.strictEqual(
+      commit.stdout.trim(),
+      'Global Pen Name <explicit@example.com>',
+    );
+  });
+
+  test('resumes after a failed tag without creating another commit', async () => {
+    const failTag: Exec = (command, args, options) =>
+      args[0] === 'tag'
+        ? Promise.resolve({ code: 1, stdout: '', stderr: 'tag failed' })
+        : exec(command, args, options);
+    await assert.rejects(
+      setupGitRepo(failTag, dir, identity),
+      /Initial tag failed: tag failed/,
+    );
+    assert.deepStrictEqual(await setupGitRepo(exec, dir), { committed: false });
+    assert.strictEqual(
+      (
+        await exec('git', ['rev-list', '--count', 'HEAD'], { cwd: dir })
+      ).stdout.trim(),
+      '1',
+    );
+    assert.strictEqual(
+      (await exec('git', ['rev-parse', 'refs/tags/v0.0.1'], { cwd: dir }))
+        .stdout,
+      (await exec('git', ['rev-parse', 'HEAD'], { cwd: dir })).stdout,
+    );
+  });
+
+  test('adds a missing tag to the initial commit in an existing history', async () => {
+    await setupGitRepo(exec, dir, identity);
+    const initial = (await exec('git', ['rev-parse', 'HEAD'], { cwd: dir }))
+      .stdout;
+    await exec('git', ['tag', '-d', 'v0.0.1'], { cwd: dir });
+    await writeFile(join(dir, 'book.toml'), 'updated');
+    await exec('git', ['commit', '-am', 'Update book'], { cwd: dir });
+    await setupGitRepo(exec, dir);
+    assert.strictEqual(
+      (await exec('git', ['rev-parse', 'refs/tags/v0.0.1'], { cwd: dir }))
+        .stdout,
+      initial,
     );
   });
 

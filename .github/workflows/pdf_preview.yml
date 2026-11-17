@@ -39,18 +39,19 @@ jobs:
         run: typst compile main.typ main.pdf
         working-directory: fairy-dust-sprinkling-made-easy
 
-      - name: Rename PDF with commit SHA
-        run: >
-          mv
-          fairy-dust-sprinkling-made-easy/main.pdf
-          fairy-dust-sprinkling-made-easy/fairy-dust-sprinkling-made-easy-${GITHUB_SHA}.pdf
+      - name: Rename PDF with short commit SHA
+        id: pdf
+        run: |
+          filename="fairy-dust-sprinkling-made-easy-${GITHUB_SHA:0:7}.pdf"
+          mv fairy-dust-sprinkling-made-easy/main.pdf "fairy-dust-sprinkling-made-easy/$filename"
+          echo "filename=$filename" >> "$GITHUB_OUTPUT"
 
       - name: Upload PDF artifact
         id: upload-pdf
         uses: actions/upload-artifact@v7
         with:
-          name: fairy-dust-sprinkling-made-easy-${{ github.sha }}.pdf
-          path: fairy-dust-sprinkling-made-easy/fairy-dust-sprinkling-made-easy-${{ github.sha }}.pdf
+          name: ${{ steps.pdf.outputs.filename }}
+          path: fairy-dust-sprinkling-made-easy/${{ steps.pdf.outputs.filename }}
           archive: false
 
       - name: Add PDF preview to PR

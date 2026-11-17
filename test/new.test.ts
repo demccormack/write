@@ -2,7 +2,8 @@ import { test, describe, before, after } from 'node:test';
 import assert from 'node:assert';
 import { spawn } from 'node:child_process';
 import { mkdir, rm, readFile, stat, writeFile } from 'fs/promises';
-import { join } from 'path';
+import { join, resolve } from 'path';
+import { fileURLToPath } from 'node:url';
 import {
   createNewProject,
   type NewProjectOptions,
@@ -156,6 +157,9 @@ async function isDirectory(dirPath: string): Promise<boolean> {
 }
 
 describe('write-cli new command', () => {
+  const savedEnv = { ...process.env };
+  const globalConfigPath = resolve(TEST_PATH, 'test.gitconfig');
+
   before(async () => {
     process.env.GIT_AUTHOR_NAME = process.env.GIT_COMMITTER_NAME = 'Test';
     process.env.GIT_AUTHOR_EMAIL = process.env.GIT_COMMITTER_EMAIL =
@@ -163,9 +167,13 @@ describe('write-cli new command', () => {
     // Ensure tmp directory exists and create test subdirectory
     await mkdir(TMP_DIR, { recursive: true });
     await mkdir(TEST_PATH, { recursive: true });
+    process.env.GIT_CONFIG_GLOBAL = globalConfigPath;
+    process.env.GIT_CONFIG_NOSYSTEM = '1';
+    await writeFile(globalConfigPath, '');
   });
 
   after(async () => {
+    process.env = { ...savedEnv };
     // Cleanup test directory
     try {
       await rm(TEST_PATH, { recursive: true, force: true });
@@ -228,6 +236,60 @@ describe('write-cli new command', () => {
     }
     assert(await isDirectory(join(TEST_PATH, 'without-git')));
     assert(!(await isDirectory(gitDir('without-git'))));
+  });
+
+  test('CLI falls back to global identity for omitted or blank fields without replacing explicit values', async () => {
+    const config =
+      '[user]\nname = Global Pen Name\nemail = global@example.com\n';
+    await writeFile(globalConfigPath, config);
+    try {
+      const cases = [
+        { args: [], name: 'Global Pen Name', email: 'global@example.com' },
+        {
+          args: ['--author', '', '--email', '   '],
+          name: 'Global Pen Name',
+          email: 'global@example.com',
+        },
+        {
+          args: ['--author', 'Explicit Pen Name'],
+          name: 'Explicit Pen Name',
+          email: 'global@example.com',
+        },
+        {
+          args: ['--email', 'explicit@example.com'],
+          name: 'Global Pen Name',
+          email: 'explicit@example.com',
+        },
+      ];
+      for (const [index, { args, name, email }] of cases.entries()) {
+        const result = await exec(
+          process.execPath,
+          [
+            '--import',
+            import.meta.resolve('tsx'),
+            fileURLToPath(new URL('../src/index.ts', import.meta.url)),
+            'new',
+            `Global Defaults ${index}`,
+            ...args,
+          ],
+          { cwd: resolve(TEST_PATH) },
+        );
+        assert.strictEqual(result.code, 0, result.stderr);
+        const projectPath = join(TEST_PATH, `global-defaults-${index}`);
+        assert.ok(
+          (await readFile(join(projectPath, 'book.toml'), 'utf8')).includes(
+            `author = "${name}"`,
+          ),
+        );
+        const commit = await exec('git', ['log', '-1', '--format=%an <%ae>'], {
+          cwd: projectPath,
+        });
+        assert.strictEqual(commit.stdout.trim(), `${name} <${email}>`);
+      }
+      assert.strictEqual(await readFile(globalConfigPath, 'utf8'), config);
+    } finally {
+      await writeFile(globalConfigPath, '');
+    }
   });
 
   test('should create the full project with only a local Git name when email is omitted or blank', async () => {
@@ -401,6 +463,61 @@ describe('write-cli new command', () => {
     assert.strictEqual(commit.stdout.trim(), `${author} <${email}>`);
   });
 
+  test('should use short commit SHAs for PDFs across workflows', async () => {
+    const projectName = 'short-sha-book';
+    const projectPath = join(TEST_PATH, projectName);
+    await runCreateNewProject('Short SHA Book', TEST_PATH);
+
+    const workflow = await readFile(
+      join(projectPath, '.github', 'workflows', 'build.yml'),
+      'utf8',
+    );
+    assert.match(
+      workflow,
+      /push:\n {4}branches: \[main\]\n {4}tags: \['v\*'\]/,
+    );
+    assert.match(workflow, /pull_request:\n {2}workflow_dispatch:/);
+    assert.ok(workflow.includes("if: startsWith(github.ref, 'refs/tags/')"));
+    assert.ok(workflow.includes('files: ${{ steps.pdf.outputs.filename }}'));
+
+    const preview = await readFile('.github/workflows/pdf_preview.yml', 'utf8');
+    const previewName = 'fairy-dust-sprinkling-made-easy';
+    await mkdir(join(projectPath, previewName));
+    for (const [text, name, subdir] of [
+      [workflow, projectName, ''],
+      [preview, previewName, previewName],
+    ]) {
+      assert.ok(text.includes('name: ${{ steps.pdf.outputs.filename }}'));
+      assert.ok(text.includes('${{ steps.pdf.outputs.filename }}'));
+      const script = text.match(
+        /- name: Rename PDF with short commit SHA\n {8}id: pdf\n {8}run: \|\n((?: {10}.+\n)+)/,
+      )?.[1];
+      assert.ok(script, 'Workflow should expose the renamed PDF as an output');
+      await writeFile(join(projectPath, subdir, 'main.pdf'), 'sample PDF');
+      const outputPath = join(process.cwd(), projectPath, `${name}-output`);
+      const renamed = await exec('bash', ['-e', '-c', script], {
+        cwd: projectPath,
+        env: {
+          ...process.env,
+          GITHUB_SHA: '1234567890abcdef1234567890abcdef12345678',
+          GITHUB_OUTPUT: outputPath,
+        },
+      });
+      assert.strictEqual(renamed.code, 0, renamed.stderr);
+      assert.strictEqual(
+        await readFile(
+          join(projectPath, subdir, `${name}-1234567.pdf`),
+          'utf8',
+        ),
+        'sample PDF',
+      );
+      assert.strictEqual(
+        await readFile(outputPath, 'utf8'),
+        `filename=${name}-1234567.pdf\n`,
+      );
+    }
+  });
+
   test('should create templated automation files', async () => {
     const projectTitle = 'Automation Test Book';
     const projectName = 'automation-test-book';
@@ -421,17 +538,28 @@ describe('write-cli new command', () => {
     );
     assert(
       buildWorkflowContent.includes(
-        `run: mv main.pdf ${projectName}-\${{ github.sha }}.pdf`,
+        `filename="${projectName}-\${GITHUB_SHA:0:7}.pdf"`,
       ),
       'Generated build workflow should rename the PDF using the project name',
     );
     assert(
-      buildWorkflowContent.includes(`${projectName}-\${{ github.sha }}.pdf`),
+      buildWorkflowContent.includes('name: ${{ steps.pdf.outputs.filename }}'),
       'Generated build workflow should upload an artifact named for the project',
     );
     assert(
       buildWorkflowContent.includes("if: github.event_name == 'pull_request'"),
       'Generated build workflow should only comment on pull requests',
+    );
+    const releaseBody = buildWorkflowContent
+      .split('- name: Create Release (on tag)')[1]
+      ?.match(/body: \|\n([\s\S]*?)\n {8}env:/)?.[1];
+    assert.ok(releaseBody, 'Generated release should have a PDF preview body');
+    assert.ok(releaseBody.includes('### 📖 PDF Preview'));
+    assert.ok(
+      releaseBody.includes(
+        '**[Open PDF preview ↗](${{ steps.upload-pdf.outputs.artifact-url }})**',
+      ),
+      'Release preview should use the same artifact URL as the PR comment',
     );
 
     const copilotInstructionsPath = join(

@@ -1,18 +1,21 @@
 import { createInterface } from 'node:readline/promises';
 import { readFile, readdir } from 'node:fs/promises';
 import { join, basename } from 'node:path';
+import { setTimeout } from 'node:timers/promises';
 import {
   type Exec,
   GH_INSTALL_URL,
   applyRepoSettings,
   checkAuth,
   createRepo,
+  enableActions,
   exec,
   getUser,
   listOrgs,
   repoExists,
+  watchRepo,
 } from '../github/gh.ts';
-import { isOwnRepo } from '../git.ts';
+import { INITIAL_TAG, isOwnRepo } from '../git.ts';
 
 export interface Prompter {
   ask(question: string, defaultValue?: string): Promise<string>;
@@ -33,6 +36,7 @@ export interface RemoteDeps {
   prompt: Prompter;
   cwd: string;
   log: (message: string) => void;
+  wait?: (milliseconds: number) => Promise<void>;
 }
 
 class FatalError extends Error {}
@@ -114,7 +118,7 @@ export async function remoteAddGithub(
   options: RemoteOptions,
   deps: RemoteDeps,
 ): Promise<number> {
-  const { run, prompt, cwd, log } = deps;
+  const { run, prompt, cwd, log, wait = setTimeout } = deps;
   const warnings: string[] = [];
   const git = (...args: string[]) => run('git', args, { cwd });
   let resume = '';
@@ -264,7 +268,26 @@ export async function remoteAddGithub(
       log('✓ Remote origin configured');
     }
 
+    const subscription = await watchRepo(run, repo);
+    if (subscription.code !== 0) {
+      throw new FatalError(
+        `Could not subscribe you to repository notifications before pushing: ${subscription.stderr.trim()}`,
+      );
+    }
+    log('✓ Subscribed to updates about your book');
+
+    const actions = await enableActions(run, repo);
+    if (actions.code !== 0) {
+      throw new FatalError(
+        `Could not enable GitHub Actions before pushing: ${actions.stderr.trim()}`,
+      );
+    }
+    log('✓ GitHub Actions enabled');
+
     // Never force: a rejected push means the remote has history we must keep
+    const tagRef = `refs/tags/${INITIAL_TAG}`;
+    const hasInitialTag =
+      (await git('rev-parse', '--verify', tagRef)).code === 0;
     const push = await git('push', '-u', 'origin', branch);
     if (push.code !== 0) {
       throw new FatalError(
@@ -272,6 +295,61 @@ export async function remoteAddGithub(
       );
     }
     log('✓ Project pushed to GitHub');
+
+    if (hasInitialTag) {
+      const tree = await git(
+        'ls-tree',
+        '-r',
+        '--name-only',
+        'HEAD',
+        '--',
+        '.github/workflows',
+      );
+      if (tree.code !== 0) {
+        throw new FatalError(
+          `Could not identify committed workflows: ${tree.stderr.trim()}`,
+        );
+      }
+      const workflows = tree.stdout
+        .split('\n')
+        .filter((path) => /^\.github\/workflows\/[^/]+\.ya?ml$/.test(path));
+
+      // The first branch push must register workflows before the tag arrives.
+      if (workflows.length) {
+        log('Waiting for GitHub to register the project workflows...');
+        for (let attempt = 0; ; attempt++) {
+          const registered = await run('gh', [
+            'api',
+            '--paginate',
+            `repos/${repo}/actions/workflows?per_page=100`,
+            '--jq',
+            '.workflows[] | select(.state == "active") | .path',
+          ]);
+          if (registered.code !== 0) {
+            throw new FatalError(
+              `Could not check workflow registration; initial tag was not pushed: ${registered.stderr.trim()}`,
+            );
+          }
+          const paths = new Set(registered.stdout.trim().split('\n'));
+          if (workflows.every((path) => paths.has(path))) break;
+          if (attempt === 29) {
+            throw new FatalError(
+              'GitHub has not registered all project workflows yet. The branch was pushed, but the initial tag was not. Re-run this command to retry.',
+            );
+          }
+          await wait(1000);
+        }
+        log('✓ Project workflows registered');
+      }
+
+      const tagPush = await git('push', 'origin', tagRef);
+      if (tagPush.code !== 0) {
+        throw new FatalError(
+          `Initial tag push failed (no force push is attempted): ${tagPush.stderr.trim()}`,
+        );
+      }
+      log(`✓ Initial tag ${INITIAL_TAG} pushed to GitHub`);
+    }
 
     // 5. Recommended settings
     const settings = await applyRepoSettings(run, {
