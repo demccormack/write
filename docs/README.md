@@ -1,8 +1,10 @@
 # write
 
-**The future of book creation tooling**
+**The self-expression framework**
 
-`write` is a free and open-source framework for writing professional-quality books, providing you with:
+Your vision. Your words. Your rules.
+
+`write` is a free and open-source framework for creating books without compromise.
 
 - 🔄 **Version control:** remembers every change, even the crazy ideas that didn't make it. Roll back to any previous state
 - ☁️ **Cloud backup:** a lost or broken computer never costs you your book
